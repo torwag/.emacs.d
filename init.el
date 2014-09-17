@@ -31,6 +31,9 @@
 
 (require 'use-package)
 
+(bind-keys ("C-h C-f" . find-function)
+           ("C-h C-v" . find-variable))
+
 (use-package company
   :diminish company-mode
   :ensure t
@@ -69,7 +72,8 @@
     (bind-keys :map evil-normal-state-map
                ("]" . next-error)
                ("[" . previous-error)
-               ("M-," . pop-tag-mark))
+               ("M-," . pop-tag-mark)
+               ("C-t" . pop-global-mark))
 
     (bind-keys :map evil-visual-state-map
                ("\\" . comment-or-uncomment-region))
@@ -179,7 +183,16 @@
 
 (use-package projectile
   :ensure t
-  :init (projectile-global-mode 1))
+  :init (projectile-global-mode 1)
+  :config
+  (progn
+    (use-package helm-projectile
+      :ensure t
+      :config
+      (progn
+        (def-projectile-commander-method ?h
+          "Helm projectile interface."
+          (helm-projectile))))))
 
 (use-package smartparens
   :ensure t
