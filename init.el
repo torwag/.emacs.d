@@ -34,6 +34,22 @@
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
 
+(use-package anzu
+  :diminish anzu-mode
+  :ensure t
+  :init (global-anzu-mode +1)
+  :config
+  (eval-after-load 'evil
+    (progn
+      (defadvice evil-search
+        (after evil-anzu-compat (string forward &optional regexp-p start))
+        (setq isearch-regexp regexp-p)
+        (run-hooks 'isearch-mode-hook 'isearch-update-post-hook))
+      (ad-activate 'evil-search)
+      (defadvice evil-flash-hook (after evil-anzu-compat)
+        (run-hooks 'isearch-mode-end-hook))
+      (ad-activate 'evil-flash-hook))))
+
 (use-package company
   :diminish company-mode
   :ensure t
