@@ -167,8 +167,13 @@
   (progn
     (ido-everywhere t)
     (use-package flx-ido
+      :ensure t
       :init (flx-ido-mode 1))
+    (use-package ido-ubiquitous
+      :ensure t
+      :init (ido-ubiquitous-mode 1))
     (use-package ido-vertical-mode
+      :ensure t
       :init (ido-vertical-mode 1))))
 
 (use-package magit
