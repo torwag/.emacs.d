@@ -26,6 +26,7 @@
 
 (auto-compression-mode 1)
 (blink-cursor-mode -1)
+(size-indication-mode 1)
 (global-auto-revert-mode 1)
 (global-subword-mode 1)
 
@@ -33,6 +34,9 @@
 
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
+
+(use-package ack-and-a-half
+  :ensure t)
 
 (use-package anzu
   :diminish anzu-mode
@@ -49,6 +53,11 @@
       (defadvice evil-flash-hook (after evil-anzu-compat)
         (run-hooks 'isearch-mode-end-hook))
       (ad-activate 'evil-flash-hook))))
+
+(use-package auto-dim-other-buffers
+  :diminish auto-dim-other-buffers-mode
+  :ensure t
+  :init (auto-dim-other-buffers-mode +1))
 
 (use-package company
   :diminish company-mode
@@ -80,6 +89,7 @@
     (add-to-list 'evil-emacs-state-modes 'project-explorer-mode)
     (add-to-list 'evil-emacs-state-modes 'paradox-menu-mode)
     (add-to-list 'evil-emacs-state-modes 'makey-key-mode)
+    (add-to-list 'evil-emacs-state-modes 'flycheck-error-list-mode)
     (add-to-list 'evil-insert-state-modes 'snippet-mode)
 
     (bind-key [escape] 'keyboard-escape-quit)
