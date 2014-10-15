@@ -123,7 +123,16 @@
 
     (use-package evil-surround
       :ensure t
-      :init (global-evil-surround-mode 1))))
+      :init (global-evil-surround-mode 1))
+
+    (use-package evil-lisp-state
+      :ensure t
+      :init
+      (progn
+        (defun my-add-lisp-state-binding ()
+          (define-key evil-insert-state-map [escape] 'evil-lisp-state)
+          (define-key evil-normal-state-map "L" 'evil-lisp-state))
+        (add-hook 'lisp-mode-hook 'my-add-lisp-state-binding)))))
 
 (use-package exec-path-from-shell
   :ensure t
@@ -134,6 +143,7 @@
   :init (global-flycheck-mode 1)
   :config
   (use-package flycheck-cask
+    :ensure t
     :init (add-hook 'flycheck-mode-hook 'flycheck-cask-setup)))
 
 (use-package flyspell
@@ -151,9 +161,15 @@
   (progn
     (bind-key "M-." 'godef-jump go-mode-map)
     (add-hook 'before-save-hook 'gofmt-before-save)
+
+    (when (load "$GOPATH/src/code.google.com/p/go.tools/refactor/rename/rename.el" t)
+      (evil-leader/set-key-for-mode 'go-mode "r" 'go-rename))
+
     (use-package company-go
+      :ensure t
       :config (add-to-list 'company-backends 'company-go))
     (use-package go-eldoc
+      :ensure t
       :config (add-hook 'go-mode-hook 'go-eldoc-setup))))
 
 (use-package helm
