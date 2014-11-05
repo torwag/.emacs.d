@@ -119,7 +119,9 @@
           "t" 'project-explorer-open
           "d" 'dired-jump
           "v" 'my-find-init-el
-          "p" 'projectile-commander)))
+          "p" 'projectile-commander
+          "i" 'helm-imenu
+          "b" 'helm-bookmarks)))
 
     (use-package evil-surround
       :ensure t
@@ -173,7 +175,12 @@
       :config (add-hook 'go-mode-hook 'go-eldoc-setup))))
 
 (use-package helm
-  :ensure t)
+  :ensure t
+  :config
+  (progn
+    (bind-keys :map helm-map
+               ("C-S-n" . helm-follow-action-forward)
+               ("C-S-p" . helm-follow-action-backward))))
 
 (use-package hl-line
   :ensure t
@@ -213,7 +220,10 @@
 
 (use-package org
   :ensure t
-  :config (setq org-src-fontify-natively t))
+  :config
+  (progn
+    (setq org-src-fontify-natively t)
+    (add-to-list 'org-latex-default-packages-alist '("" "lmodern" nil))))
 
 (use-package popwin
   :ensure t
@@ -270,5 +280,24 @@
   :diminish yas-minor-mode
   :ensure t
   :init (yas-global-mode 1))
+
+(use-package anaconda-mode
+  :ensure t
+  :init
+  (progn
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'eldoc-mode)
+    (bind-keys :map evil-normal-state-map
+               ("M-," . anaconda-nav-pop-marker))))
+
+(use-package pyenv-mode
+  :ensure t
+  :config
+  (progn
+    (defun my-set-pyenv ()
+      (--when-let (projectile-project-name)
+        (pyenv-mode)
+        (pyenv-mode-set it)))
+    (add-hook 'projectile-switch-project-hook 'my-set-pyenv)))
 
 ;;; init.el ends here
