@@ -35,6 +35,8 @@
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
 
+(bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
+
 (use-package ack-and-a-half
   :ensure t)
 
@@ -287,7 +289,7 @@
   (progn
     (add-hook 'python-mode-hook 'anaconda-mode)
     (add-hook 'python-mode-hook 'eldoc-mode)
-    (bind-keys :map evil-normal-state-map
+    (bind-keys :map anaconda-mode-map
                ("M-," . anaconda-nav-pop-marker))))
 
 (use-package pyenv-mode
@@ -296,8 +298,9 @@
   (progn
     (defun my-set-pyenv ()
       (--when-let (projectile-project-name)
-        (pyenv-mode)
-        (pyenv-mode-set it)))
+        (when (-contains? (pyenv-mode-versions) it)
+          (pyenv-mode 1)
+          (pyenv-mode-set it))))
     (add-hook 'projectile-switch-project-hook 'my-set-pyenv)))
 
 ;;; init.el ends here
