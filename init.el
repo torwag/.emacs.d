@@ -35,7 +35,8 @@
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
 
-(bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
+(use-package ace-jump-mode
+  :ensure t)
 
 (use-package ack-and-a-half
   :ensure t)
@@ -94,6 +95,7 @@
     (add-to-list 'evil-emacs-state-modes 'flycheck-error-list-mode)
     (add-to-list 'evil-insert-state-modes 'snippet-mode)
 
+    (bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
     (bind-key [escape] 'keyboard-escape-quit)
 
     (unbind-key "M-." evil-normal-state-map) ;; fall through to find-tag
@@ -101,10 +103,20 @@
                ("]" . next-error)
                ("[" . previous-error)
                ("M-," . pop-tag-mark)
-               ("C-t" . pop-global-mark))
+               ("C-t" . pop-global-mark)
+               ("C-u" . evil-scroll-up)
+               ("C-b" . universal-argument)
+               ("SPC" . evil-ace-jump-word-mode)
+               ("C-SPC" . evil-ace-jump-line-mode))
 
     (bind-keys :map evil-visual-state-map
-               ("\\" . comment-or-uncomment-region))
+               ("\\" . comment-or-uncomment-region)
+               ("SPC" . evil-ace-jump-word-mode)
+               ("C-SPC" . evil-ace-jump-line-mode))
+
+    (bind-keys :map evil-operator-state-map
+               ("SPC" . evil-ace-jump-word-mode)
+               ("C-SPC" . evil-ace-jump-line-mode))
 
     (use-package evil-leader
       :ensure t
@@ -297,10 +309,10 @@
   :config
   (progn
     (defun my-set-pyenv ()
-      (--when-let (projectile-project-name)
-        (when (-contains? (pyenv-mode-versions) it)
+      (let ((name (projectile-project-name)))
+        (when (member name (pyenv-mode-versions))
           (pyenv-mode 1)
-          (pyenv-mode-set it))))
-    (add-hook 'projectile-switch-project-hook 'my-set-pyenv)))
+          (pyenv-mode-set name))))
+    (add-hook 'python-mode-hook 'my-set-pyenv)))
 
 ;;; init.el ends here

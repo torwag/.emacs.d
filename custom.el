@@ -30,7 +30,6 @@
  '(evil-complete-previous-func (lambda (arg) (company-select-previous)))
  '(evil-cross-lines t)
  '(evil-symbol-word-search t)
- '(evil-want-C-u-scroll t)
  '(evil-want-C-w-in-emacs-state t)
  '(exec-path-from-shell-variables (quote ("PATH" "MANPATH" "GOPATH")))
  '(fill-column 80)
