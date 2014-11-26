@@ -307,7 +307,9 @@
          ("M-j" . windmove-down)))
 
 (use-package winner
-  :init (winner-mode 1))
+  :init (winner-mode 1)
+  :bind (("M-}" . winner-redo)
+         ("M-{" . winner-undo)))
 
 (use-package yasnippet
   :diminish yas-minor-mode
