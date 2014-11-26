@@ -156,32 +156,27 @@
   :init (global-flycheck-mode 1)
   :config
   (progn
-    (defvar my-flycheck-list-timer nil)
+    (defun my-fc-post-command-hook ()
+      (unless (-contains? '(my-fc-next-error my-fc-previous-error) this-command)
+        (remove-hook 'post-command-hook #'my-fc-post-command-hook)
+        (when (eq popwin:popup-buffer (get-buffer flycheck-error-list-buffer))
+          (popwin:close-popup-window))))
 
-    (defun my-flycheck-show-list ()
-      (when my-flycheck-list-timer
-        (cancel-timer my-flycheck-list-timer))
-      (setq my-flycheck-list-timer
-            (run-with-timer 3 nil 'my-flycheck-close-list-window))
-      (flycheck-list-errors))
-
-    (defun my-flycheck-close-list-window ()
-      (when (eq popwin:popup-buffer (get-buffer flycheck-error-list-buffer))
-        (popwin:close-popup-window)))
-
-    (defun my-flycheck-next-error ()
+    (defun my-fc-next-error ()
       (interactive)
-      (my-flycheck-show-list)
+      (add-hook 'post-command-hook #'my-fc-post-command-hook)
+      (flycheck-list-errors)
       (flycheck-next-error))
 
-    (defun my-flycheck-previous-error ()
+    (defun my-fc-previous-error ()
       (interactive)
-      (my-flycheck-show-list)
+      (add-hook 'post-command-hook #'my-fc-post-command-hook)
+      (flycheck-list-errors)
       (flycheck-previous-error))
 
     (bind-keys :map evil-normal-state-map
-               ("]" . my-flycheck-next-error)
-               ("[" . my-flycheck-previous-error))))
+               ("]" . my-fc-next-error)
+               ("[" . my-fc-previous-error))))
 
 (use-package flyspell
   :diminish flyspell-mode
