@@ -34,6 +34,7 @@
  '(exec-path-from-shell-variables (quote ("PATH" "MANPATH" "GOPATH")))
  '(fill-column 80)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
+ '(flycheck-display-errors-function (quote flycheck-display-error-messages-unless-error-list))
  '(flyspell-issue-message-flag nil)
  '(flyspell-issue-welcome-flag nil)
  '(gc-cons-threshold 20000000)
