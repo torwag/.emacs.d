@@ -41,6 +41,12 @@
 (use-package ack-and-a-half
   :ensure t)
 
+(use-package align
+  :config
+  (defadvice align-regexp (around align-regexp-with-spaces)
+    (let ((indent-tabs-mode nil)) ad-do-it))
+  (ad-activate 'align-regexp))
+
 (use-package anzu
   :diminish anzu-mode
   :ensure t
@@ -100,8 +106,8 @@
 
     (unbind-key "M-." evil-normal-state-map) ;; fall through to find-tag
     (bind-keys :map evil-normal-state-map
-               ("]" . next-error)
-               ("[" . previous-error)
+               ("M-]" . next-error)
+               ("M-[" . previous-error)
                ("M-," . pop-tag-mark)
                ("C-t" . pop-global-mark)
                ("C-u" . evil-scroll-up)
@@ -139,16 +145,7 @@
 
     (use-package evil-surround
       :ensure t
-      :init (global-evil-surround-mode 1))
-
-    (use-package evil-lisp-state
-      :ensure t
-      :init
-      (progn
-        (defun my-add-lisp-state-binding ()
-          (define-key evil-insert-state-map [escape] 'evil-lisp-state)
-          (define-key evil-normal-state-map "L" 'evil-lisp-state))
-        (add-hook 'lisp-mode-hook 'my-add-lisp-state-binding)))))
+      :init (global-evil-surround-mode 1))))
 
 (use-package exec-path-from-shell
   :ensure t
@@ -158,9 +155,33 @@
   :ensure t
   :init (global-flycheck-mode 1)
   :config
-  (use-package flycheck-cask
-    :ensure t
-    :init (add-hook 'flycheck-mode-hook 'flycheck-cask-setup)))
+  (progn
+    (defvar my-flycheck-list-timer nil)
+
+    (defun my-flycheck-show-list ()
+      (when my-flycheck-list-timer
+        (cancel-timer my-flycheck-list-timer))
+      (setq my-flycheck-list-timer
+            (run-with-timer 3 nil 'my-flycheck-close-list-window))
+      (flycheck-list-errors))
+
+    (defun my-flycheck-close-list-window ()
+      (when (eq popwin:popup-buffer (get-buffer flycheck-error-list-buffer))
+        (popwin:close-popup-window)))
+
+    (defun my-flycheck-next-error ()
+      (interactive)
+      (my-flycheck-show-list)
+      (flycheck-next-error))
+
+    (defun my-flycheck-previous-error ()
+      (interactive)
+      (my-flycheck-show-list)
+      (flycheck-previous-error))
+
+    (bind-keys :map evil-normal-state-map
+               ("]" . my-flycheck-next-error)
+               ("[" . my-flycheck-previous-error))))
 
 (use-package flyspell
   :diminish flyspell-mode
@@ -246,6 +267,8 @@
   (progn
     (push '("^\*helm.+\*$" :regexp t :height 15)
           popwin:special-display-config)
+    (push '(flycheck-error-list-mode :height 10 :noselect t)
+          popwin:special-display-config)
     (push '(direx:direx-mode :position left :width 25 :dedicated t)
           popwin:special-display-config)))
 
@@ -257,6 +280,7 @@
   :init (projectile-global-mode 1)
   :config
   (progn
+    (add-to-list 'projectile-globally-ignored-directories "Godeps")
     (use-package helm-projectile
       :ensure t
       :config
