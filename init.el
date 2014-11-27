@@ -26,6 +26,7 @@
 
 (auto-compression-mode 1)
 (blink-cursor-mode -1)
+(show-paren-mode 1)
 (size-indication-mode 1)
 (global-auto-revert-mode 1)
 (global-subword-mode 1)
@@ -292,10 +293,6 @@
         (def-projectile-commander-method ?h
           "Helm projectile interface."
           (helm-projectile))))))
-
-(use-package smartparens
-  :ensure t
-  :init (show-smartparens-global-mode 1))
 
 (use-package smex
   :ensure t
