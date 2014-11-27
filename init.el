@@ -151,6 +151,11 @@
   :ensure t
   :init (exec-path-from-shell-initialize))
 
+(use-package elisp-slime-nav
+  :diminish elisp-slime-nav-mode
+  :ensure t
+  :config (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
+
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode 1)
