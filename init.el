@@ -143,6 +143,10 @@
           "i" 'helm-imenu
           "b" 'helm-bookmarks)))
 
+    (use-package evil-exchange
+      :ensure t
+      :config (evil-leader/set-key "x" 'evil-exchange))
+
     (use-package evil-surround
       :ensure t
       :init (global-evil-surround-mode 1))))
