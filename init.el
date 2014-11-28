@@ -31,6 +31,8 @@
 (global-auto-revert-mode 1)
 (global-subword-mode 1)
 
+(add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
+
 (require 'use-package)
 
 (bind-keys ("C-h C-f" . find-function)
@@ -100,6 +102,7 @@
     (add-to-list 'evil-emacs-state-modes 'paradox-menu-mode)
     (add-to-list 'evil-emacs-state-modes 'makey-key-mode)
     (add-to-list 'evil-emacs-state-modes 'flycheck-error-list-mode)
+    (add-to-list 'evil-emacs-state-modes 'paradox-commit-list-mode)
     (add-to-list 'evil-insert-state-modes 'snippet-mode)
 
     (bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
@@ -272,6 +275,8 @@
   (progn
     (push '("^\*helm.+\*$" :regexp t :height 15)
           popwin:special-display-config)
+    (push '("*org headlines*" :height 15)
+          popwin:special-display-config)
     (push '(flycheck-error-list-mode :height 10 :noselect t)
           popwin:special-display-config)
     (push '(direx:direx-mode :position left :width 25 :dedicated t)
@@ -330,6 +335,9 @@
     (add-hook 'python-mode-hook 'eldoc-mode)
     (bind-keys :map anaconda-mode-map
                ("M-," . anaconda-nav-pop-marker))))
+
+(use-package paradox
+  :ensure t)
 
 (use-package pyenv-mode
   :ensure t
