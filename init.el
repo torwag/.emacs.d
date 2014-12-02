@@ -225,6 +225,12 @@
                ("C-S-n" . helm-follow-action-forward)
                ("C-S-p" . helm-follow-action-backward))))
 
+(use-package helm-swoop
+  :ensure t
+  :config
+  (evil-leader/set-key
+    "s" #'helm-swoop))
+
 (use-package hl-line
   :ensure t
   :init (global-hl-line-mode 1))
@@ -275,6 +281,8 @@
   (progn
     (push '("^\*helm.+\*$" :regexp t :height 15)
           popwin:special-display-config)
+    (push '("*Helm Swoop*" :height 15 :noselect t)
+          popwin:special-display-config)
     (push '("*org headlines*" :height 15)
           popwin:special-display-config)
     (push '(flycheck-error-list-mode :height 10 :noselect t)
@@ -303,6 +311,13 @@
   :ensure t
   :bind (("M-x" . smex)
          ("M-X" . smex-major-mode-commands)))
+
+(use-package stripe-buffer
+  :ensure t
+  :config
+  (progn
+    (set-face-background 'stripe-highlight (face-background 'auto-dim-other-buffers-face))
+    (add-hook 'dired-mode-hook 'turn-on-stripe-buffer-mode)))
 
 (use-package undo-tree
   :diminish undo-tree-mode
@@ -339,6 +354,9 @@
 (use-package paradox
   :ensure t)
 
+(use-package pcre2el
+  :ensure t)
+
 (use-package pyenv-mode
   :ensure t
   :config
@@ -349,5 +367,21 @@
           (pyenv-mode 1)
           (pyenv-mode-set name))))
     (add-hook 'python-mode-hook 'my-set-pyenv)))
+
+
+;; (use-package re-builder
+;;   :config
+;;   (progn
+;;     (add-to-list 'evil-emacs-state-modes 'reb-subexp-mode)
+;;     (--each (list reb-mode-map reb-lisp-mode-map)
+;;       (evil-define-key 'normal it
+;;         "q" 'reb-quit
+;;         "y" 'reb-copy
+;;         "n" 'reb-next-match
+;;         "p" 'reb-prev-match
+;;         "S" 'reb-enter-subexp-mode
+;;         "B" 'reb-change-target-buffer
+;;         "C" 'reb-toggle-case
+;;         "\C-i" 'reb-change-syntax))))
 
 ;;; init.el ends here

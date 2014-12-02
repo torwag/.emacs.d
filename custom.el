@@ -42,6 +42,8 @@
  '(gc-cons-threshold 20000000)
  '(global-auto-revert-non-file-buffers t)
  '(gofmt-command "goimports")
+ '(helm-swoop-speed-or-color t)
+ '(helm-swoop-use-line-number-face t)
  '(hl-todo-activate-in-modes (quote (prog-mode)))
  '(ido-enable-flex-matching t)
  '(ido-use-faces nil)
