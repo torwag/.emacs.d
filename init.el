@@ -351,6 +351,11 @@
     (bind-keys :map anaconda-mode-map
                ("M-," . anaconda-nav-pop-marker))))
 
+(use-package page-break-lines
+  :diminish page-break-lines-mode
+  :ensure t
+  :init (global-page-break-lines-mode))
+
 (use-package paradox
   :ensure t)
 
