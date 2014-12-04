@@ -79,6 +79,13 @@
     (bind-key "?" 'company-show-doc-buffer company-active-map)
     (add-hook 'after-init-hook 'global-company-mode)))
 
+(use-package cl-lib-highlight
+  :ensure t
+  :config
+  (progn
+    (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-initialize)
+    (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-warn-cl-initialize)))
+
 (use-package diff-hl
   :ensure t
   :init
@@ -154,6 +161,10 @@
     (use-package evil-surround
       :ensure t
       :init (global-evil-surround-mode 1))))
+
+(use-package eldoc
+  :config
+  (add-hook 'emacs-lisp-mode-hook #'eldoc-mode))
 
 (use-package exec-path-from-shell
   :ensure t
