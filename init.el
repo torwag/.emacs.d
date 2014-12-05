@@ -301,6 +301,19 @@
     (push '(direx:direx-mode :position left :width 25 :dedicated t)
           popwin:special-display-config)))
 
+(use-package macrostep
+  :ensure t
+  :config
+  (progn
+    (evil-leader/set-key-for-mode 'emacs-lisp-mode "e" 'macrostep-expand)
+    (evil-leader/set-key-for-mode 'lisp-interaction-mode "e" 'macrostep-expand)
+    (evil-make-overriding-map macrostep-keymap 'motion)
+    (defun my-macrostep-evil-states ()
+      (if macrostep-mode
+          (evil-motion-state)
+        (evil-normal-state)))
+    (add-hook 'macrostep-mode-hook #'my-macrostep-evil-states)))
+
 (use-package project-explorer
   :ensure t)
 
