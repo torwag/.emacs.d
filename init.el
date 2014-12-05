@@ -86,6 +86,9 @@
     (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-initialize)
     (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-warn-cl-initialize)))
 
+(use-package dash
+  :config (dash-enable-font-lock))
+
 (use-package diff-hl
   :ensure t
   :init
