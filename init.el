@@ -39,6 +39,12 @@
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
 
+(defun x-set-urgency-hint ()
+  (-let* (((_ . ((frame))) (current-frame-configuration))
+          ((flags . hints) (append (x-window-property "WM_HINTS" frame "WM_HINTS" nil nil t) nil))
+          (wm-hints (cons (logior flags #x100) hints)))
+    (x-change-window-property "WM_HINTS" wm-hints frame "WM_HINTS" 32 t)))
+
 (use-package ace-jump-mode
   :ensure t)
 
@@ -98,7 +104,7 @@
     (add-hook 'lui-mode-hook #'my-lui-setup)
     (defun my-lui-setup ()
       (setq fringes-outside-margins t
-            right-margin-width 5
+            right-margin-width 7
             word-wrap t
             wrap-prefix "    "))
 
@@ -106,6 +112,7 @@
     (add-hook 'lui-post-output-hook 'my-lui-save-highlights)
     (defun my-lui-save-highlights ()
       (when (-contains? (lui-faces-in-region (point-min) (point-max)) 'circe-highlight-nick-face)
+        (x-set-urgency-hint)
         (let ((buffer (buffer-name))
               (target circe-chat-target)
               (network (with-circe-server-buffer
