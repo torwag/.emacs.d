@@ -79,6 +79,47 @@
     (bind-key "?" 'company-show-doc-buffer company-active-map)
     (add-hook 'after-init-hook 'global-company-mode)))
 
+(use-package circe
+  :ensure t
+  :config
+  (progn
+    (enable-circe-highlight-all-nicks)
+    (enable-circe-color-nicks)
+
+    (setq circe-color-nicks-everywhere t
+          circe-highlight-nick-type 'message
+          circe-reduce-lurker-spam t
+          lui-flyspell-p t
+          lui-flyspell-alist '((".*" "american")))
+
+
+    (defvar my-lui-highlight-buffer "*Circe-Highlights*")
+    (add-hook 'lui-post-output-hook 'my-lui-save-highlights)
+    (defun my-lui-save-highlights ()
+      (when (-contains? (lui-faces-in-region (point-min) (point-max)) 'circe-highlight-nick-face)
+        (let ((buffer (buffer-name))
+              (target circe-chat-target)
+              (network (with-circe-server-buffer
+                         circe-server-network))
+              (text (buffer-string)))
+          (with-current-buffer (get-buffer-create my-lui-highlight-buffer)
+            (goto-char (point-max))
+            (save-restriction
+              (narrow-to-region (point) (point))
+              (insert (propertize (format-time-string "[%Y-%m-%d %H:%M:%S]")
+                                  'face 'lui-time-stamp-face)
+                      " "
+                      (or target buffer)
+                      "@"
+                      network
+                      " "
+                      text
+                      "\n")
+              )))))
+
+
+    ))
+
 (use-package cl-lib-highlight
   :ensure t
   :config
