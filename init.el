@@ -14,6 +14,7 @@
 
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file)
+(load-file "~/.private.el")
 
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -89,9 +90,17 @@
     (setq circe-color-nicks-everywhere t
           circe-highlight-nick-type 'message
           circe-reduce-lurker-spam t
+          lui-time-stamp-position 'right-margin
+          lui-fill-type nil
           lui-flyspell-p t
           lui-flyspell-alist '((".*" "american")))
 
+    (add-hook 'lui-mode-hook #'my-lui-setup)
+    (defun my-lui-setup ()
+      (setq fringes-outside-margins t
+            right-margin-width 5
+            word-wrap t
+            wrap-prefix "    "))
 
     (defvar my-lui-highlight-buffer "*Circe-Highlights*")
     (add-hook 'lui-post-output-hook 'my-lui-save-highlights)
