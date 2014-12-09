@@ -103,6 +103,7 @@
 
     (add-hook 'lui-mode-hook #'my-lui-setup)
     (defun my-lui-setup ()
+      (ido-vertical-mode -1)
       (setq fringes-outside-margins t
             right-margin-width 7
             word-wrap t
@@ -318,6 +319,7 @@
   :init (ido-mode 1)
   :config
   (progn
+    (setq ido-completion-buffer nil)
     (ido-everywhere t)
     (use-package flx-ido
       :ensure t
@@ -325,6 +327,9 @@
     (use-package ido-ubiquitous
       :ensure t
       :init (ido-ubiquitous-mode 1))
+    (use-package ido-at-point
+      :ensure t
+      :init (ido-at-point-mode 1))
     (use-package ido-vertical-mode
       :ensure t
       :init (ido-vertical-mode 1))))
