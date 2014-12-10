@@ -93,7 +93,9 @@
     (enable-circe-highlight-all-nicks)
     (enable-circe-color-nicks)
 
-    (setq circe-color-nicks-everywhere t
+    (setq circe-default-part-message "Part"
+          circe-default-quit-message "Quit"
+          circe-color-nicks-everywhere t
           circe-highlight-nick-type 'message
           circe-reduce-lurker-spam t
           lui-time-stamp-position 'right-margin
