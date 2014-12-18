@@ -56,16 +56,17 @@
  '(kept-new-versions 20)
  '(kept-old-versions 5)
  '(org-agenda-files nil)
+ '(paradox-execute-asynchronously nil)
  '(paradox-github-token t)
  '(projectile-mode-line (quote (:eval (format " P[%s]" (projectile-project-name)))))
  '(require-final-newline (quote visit-save))
+ '(select-enable-primary t)
  '(sentence-end-double-space nil)
  '(size-indication-mode t)
  '(tool-bar-mode nil)
  '(uniquify-buffer-name-style (quote post-forward) nil (uniquify))
  '(uniquify-separator ":")
  '(version-control t)
- '(x-select-enable-primary t)
  '(yas-prompt-functions (quote (yas/ido-prompt))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
