@@ -252,14 +252,14 @@
     (defun my-fc-next-error ()
       (interactive)
       (add-hook 'post-command-hook #'my-fc-post-command-hook)
-      (flycheck-list-errors)
-      (flycheck-next-error))
+      (when (flycheck-next-error)
+        (flycheck-list-errors)))
 
     (defun my-fc-previous-error ()
       (interactive)
       (add-hook 'post-command-hook #'my-fc-post-command-hook)
-      (flycheck-list-errors)
-      (flycheck-previous-error))
+      (when (flycheck-previous-error)
+        (flycheck-list-errors)))
 
     (bind-keys :map evil-normal-state-map
                ("]" . my-fc-next-error)
