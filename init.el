@@ -78,6 +78,10 @@
   :ensure t
   :init (auto-dim-other-buffers-mode +1))
 
+(use-package calendar
+  :config
+  (setq calendar-week-start-day 1))
+
 (use-package company
   :diminish company-mode
   :ensure t
@@ -105,7 +109,6 @@
 
     (add-hook 'lui-mode-hook #'my-lui-setup)
     (defun my-lui-setup ()
-      (ido-vertical-mode -1)
       (setq fringes-outside-margins t
             right-margin-width 7
             word-wrap t
@@ -243,11 +246,16 @@
   :init (global-flycheck-mode 1)
   :config
   (progn
+    (with-eval-after-load 'shackle
+      (add-to-list 'shackle-rules '(flycheck-error-list-mode
+                                    :ratio 0.25
+                                    :align t)))
+
     (defun my-fc-post-command-hook ()
       (unless (-contains? '(my-fc-next-error my-fc-previous-error) this-command)
         (remove-hook 'post-command-hook #'my-fc-post-command-hook)
-        (when (eq popwin:popup-buffer (get-buffer flycheck-error-list-buffer))
-          (popwin:close-popup-window))))
+        (-when-let (win (get-buffer-window flycheck-error-list-buffer))
+          (delete-window win))))
 
     (defun my-fc-next-error ()
       (interactive)
@@ -331,7 +339,14 @@
       :init (ido-ubiquitous-mode 1))
     (use-package ido-at-point
       :ensure t
-      :init (ido-at-point-mode 1))
+      :init (ido-at-point-mode 1)
+      :config
+      (defadvice ido-at-point-read (around my-ido-at-point-fix activate)
+        (if (bound-and-true-p ido-vertical-mode)
+            (progn (ido-vertical-mode -1)
+                   ad-do-it
+                   (ido-vertical-mode +1))
+          ad-do-it)))
     (use-package ido-vertical-mode
       :ensure t
       :init (ido-vertical-mode 1))))
@@ -352,21 +367,9 @@
     (setq org-src-fontify-natively t)
     (add-to-list 'org-latex-default-packages-alist '("" "lmodern" nil))))
 
-(use-package popwin
+(use-package shackle
   :ensure t
-  :init (popwin-mode 1)
-  :config
-  (progn
-    (push '("^\*helm.+\*$" :regexp t :height 15)
-          popwin:special-display-config)
-    (push '("*Helm Swoop*" :height 15 :noselect t)
-          popwin:special-display-config)
-    (push '("*org headlines*" :height 15)
-          popwin:special-display-config)
-    (push '(flycheck-error-list-mode :height 10 :noselect t)
-          popwin:special-display-config)
-    (push '(direx:direx-mode :position left :width 25 :dedicated t)
-          popwin:special-display-config)))
+  :init (shackle-mode 1))
 
 (use-package macrostep
   :ensure t
