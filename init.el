@@ -36,6 +36,23 @@
 
 (require 'use-package)
 
+(defun my-use-package-evil-states (states)
+  (-map (-lambda ((mode . state))
+          `(add-to-list
+            ,(intern (format "evil-%s-state-modes"
+                             (symbol-name state)))
+            mode))
+        states))
+
+(add-to-list 'use-package-keywords :evil-state)
+
+(defadvice use-package (before my-use-package activate)
+  (let ((config-body (use-package-plist-get args :config)))
+    (--when-let (use-package-plist-get args :evil-state)
+      (setq config-body `(progn ,config-body
+                                ,@(my-use-package-evil-states it))))
+    (setq args (plist-put args :config config-body))))
+
 (bind-keys ("C-h C-f" . find-function)
            ("C-h C-v" . find-variable))
 
