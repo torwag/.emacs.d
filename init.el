@@ -5,112 +5,183 @@
 
 ;;; Code:
 
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
 
-(require 'cask "~/.cask/cask.el")
-(cask-initialize)
 
-(setq custom-file (locate-user-emacs-file "custom.el"))
-(load custom-file)
-(load-file "~/.private.el")
+;;; Package management
+(setq load-prefer-newer t)
 
-(setq locale-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 
-(fset 'yes-or-no-p 'y-or-n-p)
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(package-initialize)
 
-(auto-compression-mode 1)
-(blink-cursor-mode -1)
-(show-paren-mode 1)
-(size-indication-mode 1)
-(global-auto-revert-mode 1)
-(global-subword-mode 1)
-
-(add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 (require 'use-package)
 
-(defun my-use-package-evil-states (states)
-  (-map (-lambda ((mode . state))
-          `(add-to-list
-            ,(intern (format "evil-%s-state-modes"
-                             (symbol-name state)))
-            mode))
-        states))
-
-(add-to-list 'use-package-keywords :evil-state)
-
-(defadvice use-package (before my-use-package activate)
-  (let ((config-body (use-package-plist-get args :config)))
-    (--when-let (use-package-plist-get args :evil-state)
-      (setq config-body `(progn ,config-body
-                                ,@(my-use-package-evil-states it))))
-    (setq args (plist-put args :config config-body))))
-
-(bind-keys ("C-h C-f" . find-function)
-           ("C-h C-v" . find-variable))
-
-(defun x-set-urgency-hint ()
-  (-let* (((_ . ((frame))) (current-frame-configuration))
-          ((flags . hints) (append (x-window-property "WM_HINTS" frame "WM_HINTS" nil nil t) nil))
-          (wm-hints (cons (logior flags #x100) hints)))
-    (x-change-window-property "WM_HINTS" wm-hints frame "WM_HINTS" 32 t)))
-
-(use-package ace-jump-mode
-  :ensure t)
-
-(use-package ack-and-a-half
-  :ensure t)
-
-(use-package align
-  :config
-  (defadvice align-regexp (around align-regexp-with-spaces)
-    (let ((indent-tabs-mode nil)) ad-do-it))
-  (ad-activate 'align-regexp))
-
-(use-package anzu
-  :diminish anzu-mode
+(use-package dash
   :ensure t
-  :init (global-anzu-mode +1)
+  :config (dash-enable-font-lock))
+
+(eval-and-compile
+  (use-package evil-use-package
+    :load-path "lisp/"))
+
+;;; Initialization
+
+(setq inhibit-default-init t
+      inhibit-startup-echo-area-message t
+      inhibit-startup-screen t
+      initial-scratch-message nil)
+
+(load-file "~/.private.el")
+
+(use-package exec-path-from-shell
+  :ensure t
+  :init (exec-path-from-shell-initialize))
+
+;;; UI
+
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(blink-cursor-mode -1)
+(line-number-mode)
+(column-number-mode)
+(size-indication-mode)
+(fset 'yes-or-no-p #'y-or-n-p)
+
+(use-package cus-edit
+  :defer t
+  :init
+  (progn (setq custom-file (locate-user-emacs-file "custom.el"))
+         (load custom-file 'no-error 'no-message))
   :config
-  (eval-after-load 'evil
-    (progn
-      (defadvice evil-search
-        (after evil-anzu-compat (string forward &optional regexp-p start))
-        (setq isearch-regexp regexp-p)
-        (run-hooks 'isearch-mode-hook 'isearch-update-post-hook))
-      (ad-activate 'evil-search)
-      (defadvice evil-flash-hook (after evil-anzu-compat)
-        (run-hooks 'isearch-mode-end-hook))
-      (ad-activate 'evil-flash-hook))))
+  (setq custom-buffer-verbose-help nil
+        custom-unlispify-tag-names nil
+        custom-unlispify-menu-entries nil))
+
+(use-package unicode-fonts
+  :ensure t
+  :init (unicode-fonts-setup))
+
+(use-package dynamic-fonts
+  :ensure t
+  :init
+  (dynamic-fonts-setup))
+
+(use-package paren
+  :init (show-paren-mode 1)
+  :config (setq show-paren-when-point-inside-paren t
+                show-paren-when-point-in-periphery t))
+
+(use-package leuven-theme
+  :ensure t
+  :init (load-theme 'leuven 'no-confirm))
 
 (use-package auto-dim-other-buffers
   :diminish auto-dim-other-buffers-mode
   :ensure t
   :init (auto-dim-other-buffers-mode +1))
 
-(use-package calendar
-  :config
-  (setq calendar-week-start-day 1))
+(use-package my-x
+  :load-path "lisp/"
+  :defer t)
+
+;;; Files
+
+(auto-compression-mode)
+
+(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+      backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
+      delete-by-moving-to-trash t
+      require-final-newline 'visit-save)
+
+(use-package autorevert
+  :init (global-auto-revert-mode)
+  :config (setq global-auto-revert-non-file-buffers t))
+
+(use-package image-file
+  :init (auto-image-file-mode))
+
+(use-package whitespace-cleanup-mode
+  :ensure t
+  :init (global-whitespace-cleanup-mode)
+  :diminish whitespace-cleanup-mode)
+
+;;; Completion, snippets
 
 (use-package company
   :diminish company-mode
   :ensure t
+  :defer t
+  :idle (global-company-mode)
+  :config
+  (setq company-tooltip-align-annotations t
+        company-dabbrev-downcase nil
+        company-dabbrev-ignore-case nil))
+
+(use-package hippie-exp
+  :evil-bind ((insert "TAB" hippie-expand))
   :config
   (progn
-    (bind-key "?" 'company-show-doc-buffer company-active-map)
-    (add-hook 'after-init-hook 'global-company-mode)))
+    (setq hippie-expand-try-functions-list
+          '(try-expand-dabbrev
+            try-expand-dabbrev-all-buffers
+            try-expand-dabbrev-from-kill
+            try-complete-file-name-partially
+            try-complete-file-name
+            try-expand-all-abbrevs
+            try-expand-list
+            try-complete-lisp-symbol-partially
+            try-complete-lisp-symbol
+            try-expand-line))
+    (with-eval-after-load 'yasnippet
+      (add-to-list 'hippie-expand-try-functions-list
+                   'yas-hippie-try-expand))))
+
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :ensure t
+  :idle (yas-global-mode 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(global-subword-mode 1)
+
+(add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
+
+
+(bind-keys ("C-h C-f" . find-function)
+           ("C-h C-v" . find-variable))
+
+
+(use-package subword
+  :init (global-subword-mode)
+  :diminish subword-mode)
+
+(use-package ace-jump-mode
+  :ensure t)
+
+(use-package ag
+  :config
+  (setq ag-highlight-search t)
+  :ensure t)
+
+(use-package calendar
+  :config
+  (setq calendar-week-start-day 1))
 
 (use-package circe
   :ensure t
+  :defer t
+  :defines (circe-color-nicks-everywhere)
   :config
   (progn
+    (require 'circe-color-nicks)
     (enable-circe-highlight-all-nicks)
     (enable-circe-color-nicks)
 
@@ -129,35 +200,7 @@
       (setq fringes-outside-margins t
             right-margin-width 7
             word-wrap t
-            wrap-prefix "    "))
-
-    (defvar my-lui-highlight-buffer "*Circe-Highlights*")
-    (add-hook 'lui-post-output-hook 'my-lui-save-highlights)
-    (defun my-lui-save-highlights ()
-      (when (-contains? (lui-faces-in-region (point-min) (point-max)) 'circe-highlight-nick-face)
-        (x-set-urgency-hint)
-        (let ((buffer (buffer-name))
-              (target circe-chat-target)
-              (network (with-circe-server-buffer
-                         circe-server-network))
-              (text (buffer-string)))
-          (with-current-buffer (get-buffer-create my-lui-highlight-buffer)
-            (goto-char (point-max))
-            (save-restriction
-              (narrow-to-region (point) (point))
-              (insert (propertize (format-time-string "[%Y-%m-%d %H:%M:%S]")
-                                  'face 'lui-time-stamp-face)
-                      " "
-                      (or target buffer)
-                      "@"
-                      network
-                      " "
-                      text
-                      "\n")
-              )))))
-
-
-    ))
+            wrap-prefix "    "))))
 
 (use-package cl-lib-highlight
   :ensure t
@@ -166,9 +209,6 @@
     (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-initialize)
     (add-hook 'emacs-lisp-mode-hook #'cl-lib-highlight-warn-cl-initialize)))
 
-(use-package dash
-  :config (dash-enable-font-lock))
-
 (use-package diff-hl
   :ensure t
   :init
@@ -176,18 +216,43 @@
     (global-diff-hl-mode 1)
     (add-hook 'dired-mode-hook 'diff-hl-dired-mode)))
 
-(use-package dired-x)
+(use-package dired
+  :defer t
+  :config
+  (setq dired-auto-revert-buffer t
+        dired-dwim-target t
+        dired-listing-switches "-alhFg"))
 
-(use-package direx
-  :ensure t)
+(use-package dired-x
+  :defer t)
+
+(use-package ediff
+  :config
+  (progn
+    (setq ediff-diff-options "-w"
+          ediff-split-window-function 'split-window-horizontally
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    (with-eval-after-load 'winner
+      (add-hook 'ediff-after-quit-hook-internal #'winner-undo))))
+
+;;; Editing
+
+(setq sentence-end-double-space nil)
+
+(setq-default fill-column 80
+              indent-tabs-mode nil
+              indicate-empty-lines t)
 
 (use-package evil
   :ensure t
   :init (evil-mode 1)
   :config
   (progn
+    (setq-default evil-symbol-word-search t)
+    (setq evil-cross-lines t
+          evil-want-C-w-in-emacs-state t)
+    ;; TODO
     (add-to-list 'evil-emacs-state-modes 'git-rebase-mode)
-    (add-to-list 'evil-emacs-state-modes 'direx:direx-mode)
     (add-to-list 'evil-emacs-state-modes 'project-explorer-mode)
     (add-to-list 'evil-emacs-state-modes 'paradox-menu-mode)
     (add-to-list 'evil-emacs-state-modes 'makey-key-mode)
@@ -228,7 +293,7 @@
           (interactive)
           (find-file user-init-file))
         (evil-leader/set-key
-          "g" 'magit-status
+          ;; "g" 'magit-status
           "u" 'undo-tree-visualize
           "t" 'project-explorer-open
           "d" 'dired-jump
@@ -245,13 +310,23 @@
       :ensure t
       :init (global-evil-surround-mode 1))))
 
+(use-package anzu
+  :ensure t
+  :init (global-anzu-mode))
+
+(use-package evil-anzu
+  :load-path "~/code/emacs-evil-anzu"
+  :evil-bind ((motion "n" evil-anzu-search-next
+                      "N" evil-anzu-search-previous))
+  :init (global-evil-anzu-mode))
+
+(use-package string-inflection
+  :ensure t
+  :evil-leader ("c" string-inflection-cycle))
+
 (use-package eldoc
   :config
   (add-hook 'emacs-lisp-mode-hook #'eldoc-mode))
-
-(use-package exec-path-from-shell
-  :ensure t
-  :init (exec-path-from-shell-initialize))
 
 (use-package elisp-slime-nav
   :diminish elisp-slime-nav-mode
@@ -263,6 +338,9 @@
   :init (global-flycheck-mode 1)
   :config
   (progn
+    (setq flycheck-check-syntax-automatically '(save new-line mode-enabled)
+          flycheck-display-errors-function 'flycheck-display-error-messages-unless-error-list)
+
     (with-eval-after-load 'shackle
       (add-to-list 'shackle-rules '(flycheck-error-list-mode
                                     :ratio 0.25
@@ -290,31 +368,21 @@
                ("]" . my-fc-next-error)
                ("[" . my-fc-previous-error))))
 
+(use-package ispell
+  :defer t
+  :config
+  (setq ispell-list-command "list"
+        ispell-program-name "aspell"))
+
 (use-package flyspell
   :diminish flyspell-mode
   :ensure t
   :config
   (progn
-    (setq-default ispell-list-command "list")
+    (setq flyspell-issue-message-flag nil
+          flyspell-issue-welcome-flag nil)
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
-
-(use-package go-mode
-  :ensure t
-  :config
-  (progn
-    (bind-key "M-." 'godef-jump go-mode-map)
-    (add-hook 'before-save-hook 'gofmt-before-save)
-
-    (when (load "$GOPATH/src/code.google.com/p/go.tools/refactor/rename/rename.el" t)
-      (evil-leader/set-key-for-mode 'go-mode "r" 'go-rename))
-
-    (use-package company-go
-      :ensure t
-      :config (add-to-list 'company-backends 'company-go))
-    (use-package go-eldoc
-      :ensure t
-      :config (add-hook 'go-mode-hook 'go-eldoc-setup))))
 
 (use-package helm
   :ensure t
@@ -327,8 +395,11 @@
 (use-package helm-swoop
   :ensure t
   :config
-  (evil-leader/set-key
-    "s" #'helm-swoop))
+  (progn
+    (setq  helm-swoop-speed-or-color t
+           helm-swoop-use-line-number-face t)
+    (evil-leader/set-key
+      "s" #'helm-swoop)))
 
 (use-package hl-line
   :ensure t
@@ -336,41 +407,46 @@
 
 (use-package hl-todo
   :ensure t
-  :init (global-hl-todo-mode 1))
+  :init (global-hl-todo-mode 1)
+  :config
+  (setq hl-todo-activate-in-modes '(prog-mode)))
 
 (use-package ibuffer
   :bind ("C-x C-b" . ibuffer))
 
 (use-package ido
   :ensure t
-  :init (ido-mode 1)
+  :init (progn (ido-mode)
+               (ido-everywhere))
   :config
-  (progn
-    (setq ido-completion-buffer nil)
-    (ido-everywhere t)
-    (use-package flx-ido
-      :ensure t
-      :init (flx-ido-mode 1))
-    (use-package ido-ubiquitous
-      :ensure t
-      :init (ido-ubiquitous-mode 1))
-    (use-package ido-at-point
-      :ensure t
-      :init (ido-at-point-mode 1)
-      :config
-      (defadvice ido-at-point-read (around my-ido-at-point-fix activate)
-        (if (bound-and-true-p ido-vertical-mode)
-            (progn (ido-vertical-mode -1)
-                   ad-do-it
-                   (ido-vertical-mode +1))
-          ad-do-it)))
-    (use-package ido-vertical-mode
-      :ensure t
-      :init (ido-vertical-mode 1))))
+  (setq ido-enable-flex-matching t
+        ido-completion-buffer nil
+        ido-use-faces nil))
+
+(use-package flx-ido
+  :ensure t
+  :init (flx-ido-mode))
+
+(use-package ido-ubiquitous
+  :ensure t
+  :init (ido-ubiquitous-mode))
+
+(use-package ido-at-point
+  :ensure t
+  :init (ido-at-point-mode))
+
+(use-package ido-vertical-mode
+  :ensure t
+  :init (ido-vertical-mode))
 
 (use-package magit
   :diminish magit-auto-revert-mode
+  :load-path "~/code/magit/"
+  :evil-leader ("g" magit-status)
   :ensure t)
+
+(use-package magit-popup
+  :evil-state (magit-popup-mode emacs))
 
 (use-package markdown-mode
   :ensure t
@@ -386,14 +462,17 @@
 
 (use-package shackle
   :ensure t
+  :diminish shackle-mode
   :init (shackle-mode 1))
 
 (use-package macrostep
   :ensure t
+  :evil-leader ((emacs-lisp-mode
+                 "e" macrostep-expand)
+                (lisp-interaction-mode
+                 "e" macrostep-expand))
   :config
   (progn
-    (evil-leader/set-key-for-mode 'emacs-lisp-mode "e" 'macrostep-expand)
-    (evil-leader/set-key-for-mode 'lisp-interaction-mode "e" 'macrostep-expand)
     (evil-make-overriding-map macrostep-keymap 'motion)
     (defun my-macrostep-evil-states ()
       (if macrostep-mode
@@ -408,15 +487,7 @@
   :ensure t
   :init (projectile-global-mode 1)
   :config
-  (progn
-    (add-to-list 'projectile-globally-ignored-directories "Godeps")
-    (use-package helm-projectile
-      :ensure t
-      :config
-      (progn
-        (def-projectile-commander-method ?h
-          "Helm projectile interface."
-          (helm-projectile))))))
+  (setq projectile-mode-line '(:eval (format " P[%s]" (projectile-project-name)))))
 
 (use-package smex
   :ensure t
@@ -434,7 +505,10 @@
   :diminish undo-tree-mode
   :ensure t)
 
-(use-package uniquify)
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style 'post-forward
+        uniquify-separator ":"))
 
 (use-package windmove
   :ensure t
@@ -448,17 +522,18 @@
   :bind (("M-}" . winner-redo)
          ("M-{" . winner-undo)))
 
-(use-package yasnippet
-  :diminish yas-minor-mode
+(use-package highlight-numbers
   :ensure t
-  :init (yas-global-mode 1))
+  :defer t
+  :init
+  (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
 (use-package anaconda-mode
   :ensure t
   :init
   (progn
-    (add-hook 'python-mode-hook 'anaconda-mode)
-    (add-hook 'python-mode-hook 'eldoc-mode)
+    (add-hook 'python-mode-hook #'anaconda-mode)
+    (add-hook 'python-mode-hook #'eldoc-mode)
     (bind-keys :map anaconda-mode-map
                ("M-," . anaconda-nav-pop-marker))))
 
@@ -468,7 +543,10 @@
   :init (global-page-break-lines-mode))
 
 (use-package paradox
-  :ensure t)
+  :ensure t
+  :config
+  (setq paradox-execute-asynchronously nil
+        paradox-github-token t))
 
 (use-package pcre2el
   :ensure t)
@@ -484,6 +562,9 @@
           (pyenv-mode-set name))))
     (add-hook 'python-mode-hook 'my-set-pyenv)))
 
+(use-package help-mode
+  :config
+  (evil-make-overriding-map help-mode-map 'motion))
 
 ;; (use-package re-builder
 ;;   :config
