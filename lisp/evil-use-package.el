@@ -43,14 +43,14 @@
 
 (defun evil-use-package-evil-state (mode-states)
   (->> mode-states
-    (evil-use-package-quote-symbols)
-    (-partition 2)
-    (--map (cons 'evil-set-initial-state it))
-    (evil-use-package-wrap-weal 'evil)))
+       (evil-use-package-wrap-when-car #'symbolp)
+       (-map (-lambda ((mode . state))
+               `(evil-set-initial-state ',mode ',state)))
+       (evil-use-package-wrap-weal 'evil)))
 
 (defun evil-use-package-evil-bind (args)
   (->> args
-    (evil-use-package-wrap-when-car #'stringp) ; TODO
+    (evil-use-package-wrap-when-car #'symbolp)
     (-non-nil)
     (-map (-lambda ((state . bindings))
             (let* ((global (= (% (length bindings) 2) 0))

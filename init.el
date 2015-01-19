@@ -37,8 +37,6 @@
       inhibit-startup-screen t
       initial-scratch-message nil)
 
-(load-file "~/.private.el")
-
 (use-package exec-path-from-shell
   :ensure t
   :init (exec-path-from-shell-initialize))
@@ -58,24 +56,30 @@
   :defer t
   :init
   (progn (setq custom-file (locate-user-emacs-file "custom.el"))
-         (load custom-file 'no-error 'no-message))
+         (load custom-file 'no-error 'no-message)
+         (load "~/.private.el" 'no-error 'no-message))
   :config
   (setq custom-buffer-verbose-help nil
         custom-unlispify-tag-names nil
         custom-unlispify-menu-entries nil))
 
-(use-package unicode-fonts
-  :ensure t
-  :init (unicode-fonts-setup))
-
 (use-package dynamic-fonts
   :ensure t
   :init
-  (dynamic-fonts-setup))
+  (progn
+    (setq dynamic-fonts-preferred-monospace-point-size 10
+          dynamic-fonts-preferred-monospace-fonts
+          (-union '("Source Code Pro") dynamic-fonts-preferred-monospace-fonts))
+    (dynamic-fonts-setup)))
+
+(use-package unicode-fonts
+  :ensure t
+  :disabled t
+  :init (unicode-fonts-setup))
 
 (use-package paren
-  :init (show-paren-mode 1)
-  :config (setq show-paren-when-point-inside-paren t
+  :init (show-paren-mode)
+  :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
 (use-package leuven-theme
@@ -85,7 +89,7 @@
 (use-package auto-dim-other-buffers
   :diminish auto-dim-other-buffers-mode
   :ensure t
-  :init (auto-dim-other-buffers-mode +1))
+  :init (auto-dim-other-buffers-mode))
 
 (use-package my-x
   :load-path "lisp/"
@@ -125,7 +129,7 @@
         company-dabbrev-ignore-case nil))
 
 (use-package hippie-exp
-  :evil-bind ((insert "TAB" hippie-expand))
+  :evil-bind (insert "TAB" hippie-expand)
   :config
   (progn
     (setq hippie-expand-try-functions-list
@@ -146,11 +150,11 @@
 (use-package yasnippet
   :diminish yas-minor-mode
   :ensure t
-  :idle (yas-global-mode 1))
+  :idle (yas-global-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(global-subword-mode 1)
+(global-subword-mode)
 
 (add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
 
@@ -211,17 +215,16 @@
 
 (use-package diff-hl
   :ensure t
-  :init
-  (progn
-    (global-diff-hl-mode 1)
-    (add-hook 'dired-mode-hook 'diff-hl-dired-mode)))
+  :init (global-diff-hl-mode)
+  :config
+  (add-hook 'dired-mode-hook 'diff-hl-dired-mode))
 
 (use-package dired
   :defer t
   :config
   (setq dired-auto-revert-buffer t
         dired-dwim-target t
-        dired-listing-switches "-alhFg"))
+        dired-listing-switches "-alhF"))
 
 (use-package dired-x
   :defer t)
@@ -245,7 +248,7 @@
 
 (use-package evil
   :ensure t
-  :init (evil-mode 1)
+  :init (evil-mode)
   :config
   (progn
     (setq-default evil-symbol-word-search t)
@@ -254,10 +257,6 @@
     ;; TODO
     (add-to-list 'evil-emacs-state-modes 'git-rebase-mode)
     (add-to-list 'evil-emacs-state-modes 'project-explorer-mode)
-    (add-to-list 'evil-emacs-state-modes 'paradox-menu-mode)
-    (add-to-list 'evil-emacs-state-modes 'makey-key-mode)
-    (add-to-list 'evil-emacs-state-modes 'flycheck-error-list-mode)
-    (add-to-list 'evil-emacs-state-modes 'paradox-commit-list-mode)
     (add-to-list 'evil-insert-state-modes 'snippet-mode)
 
     (bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
@@ -285,7 +284,7 @@
 
     (use-package evil-leader
       :ensure t
-      :init (global-evil-leader-mode 1)
+      :init (global-evil-leader-mode)
       :config
       (progn
         (evil-leader/set-leader ",")
@@ -308,16 +307,18 @@
 
     (use-package evil-surround
       :ensure t
-      :init (global-evil-surround-mode 1))))
+      :init (global-evil-surround-mode))))
 
 (use-package anzu
+  :diminish anzu-mode
   :ensure t
   :init (global-anzu-mode))
 
 (use-package evil-anzu
+  :diminish evil-anzu-mode
   :load-path "~/code/emacs-evil-anzu"
-  :evil-bind ((motion "n" evil-anzu-search-next
-                      "N" evil-anzu-search-previous))
+  :evil-bind (motion "n" evil-anzu-search-next
+                     "N" evil-anzu-search-previous)
   :init (global-evil-anzu-mode))
 
 (use-package string-inflection
@@ -335,44 +336,23 @@
 
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode 1)
-  :config
-  (progn
-    (setq flycheck-check-syntax-automatically '(save new-line mode-enabled)
-          flycheck-display-errors-function 'flycheck-display-error-messages-unless-error-list)
+  :evil-state (flycheck-error-list-mode . emacs)
+  :init (global-flycheck-mode))
 
-    (with-eval-after-load 'shackle
-      (add-to-list 'shackle-rules '(flycheck-error-list-mode
-                                    :ratio 0.25
-                                    :align t)))
+(use-package flycheck-pos-tip
+  :ensure t
+  :defer t
+  :init
+  (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
-    (defun my-fc-post-command-hook ()
-      (unless (-contains? '(my-fc-next-error my-fc-previous-error) this-command)
-        (remove-hook 'post-command-hook #'my-fc-post-command-hook)
-        (-when-let (win (get-buffer-window flycheck-error-list-buffer))
-          (delete-window win))))
-
-    (defun my-fc-next-error ()
-      (interactive)
-      (add-hook 'post-command-hook #'my-fc-post-command-hook)
-      (when (flycheck-next-error)
-        (flycheck-list-errors)))
-
-    (defun my-fc-previous-error ()
-      (interactive)
-      (add-hook 'post-command-hook #'my-fc-post-command-hook)
-      (when (flycheck-previous-error)
-        (flycheck-list-errors)))
-
-    (bind-keys :map evil-normal-state-map
-               ("]" . my-fc-next-error)
-               ("[" . my-fc-previous-error))))
+(use-package flycheck-follow
+  :load-path "lisp/"
+  :evil-bind (normal flycheck-mode-map
+                     "]q" flycheck-follow-next-error
+                     "[q" flycheck-follow-previous-error))
 
 (use-package ispell
-  :defer t
-  :config
-  (setq ispell-list-command "list"
-        ispell-program-name "aspell"))
+  :defer t)
 
 (use-package flyspell
   :diminish flyspell-mode
@@ -384,34 +364,25 @@
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
 
-(use-package helm
-  :ensure t
-  :config
-  (progn
-    (bind-keys :map helm-map
-               ("C-S-n" . helm-follow-action-forward)
-               ("C-S-p" . helm-follow-action-backward))))
-
 (use-package helm-swoop
   :ensure t
+  :evil-leader ("s" helm-swoop)
   :config
-  (progn
-    (setq  helm-swoop-speed-or-color t
-           helm-swoop-use-line-number-face t)
-    (evil-leader/set-key
-      "s" #'helm-swoop)))
+  (setq helm-swoop-speed-or-color t
+        helm-swoop-use-line-number-face t))
 
 (use-package hl-line
   :ensure t
-  :init (global-hl-line-mode 1))
+  :init (global-hl-line-mode))
 
 (use-package hl-todo
   :ensure t
-  :init (global-hl-todo-mode 1)
+  :init (global-hl-todo-mode)
   :config
   (setq hl-todo-activate-in-modes '(prog-mode)))
 
 (use-package ibuffer
+  :defer t
   :bind ("C-x C-b" . ibuffer))
 
 (use-package ido
@@ -440,13 +411,13 @@
   :init (ido-vertical-mode))
 
 (use-package magit
-  :diminish magit-auto-revert-mode
+  :diminish (magit-auto-revert-mode magit-backup-mode)
   :load-path "~/code/magit/"
   :evil-leader ("g" magit-status)
   :ensure t)
 
 (use-package magit-popup
-  :evil-state (magit-popup-mode emacs))
+  :evil-state (magit-popup-mode . emacs))
 
 (use-package markdown-mode
   :ensure t
@@ -463,7 +434,7 @@
 (use-package shackle
   :ensure t
   :diminish shackle-mode
-  :init (shackle-mode 1))
+  :init (shackle-mode))
 
 (use-package macrostep
   :ensure t
@@ -485,7 +456,8 @@
 
 (use-package projectile
   :ensure t
-  :init (projectile-global-mode 1)
+  :init (projectile-global-mode)
+  :idle (projectile-cleanup-known-projects)
   :config
   (setq projectile-mode-line '(:eval (format " P[%s]" (projectile-project-name)))))
 
@@ -518,7 +490,7 @@
          ("M-j" . windmove-down)))
 
 (use-package winner
-  :init (winner-mode 1)
+  :init (winner-mode)
   :bind (("M-}" . winner-redo)
          ("M-{" . winner-undo)))
 
@@ -544,6 +516,8 @@
 
 (use-package paradox
   :ensure t
+  :evil-state ((paradox-menu-mode . emacs)
+               (paradox-commit-list-mode . emacs))
   :config
   (setq paradox-execute-asynchronously nil
         paradox-github-token t))
@@ -558,7 +532,7 @@
     (defun my-set-pyenv ()
       (let ((name (projectile-project-name)))
         (when (member name (pyenv-mode-versions))
-          (pyenv-mode 1)
+          (pyenv-mode)
           (pyenv-mode-set name))))
     (add-hook 'python-mode-hook 'my-set-pyenv)))
 
