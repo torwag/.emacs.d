@@ -82,13 +82,22 @@
   :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
+(use-package solarized-theme
+  :ensure t
+  :init
+  (progn
+    (setq solarized-high-contrast-mode-line t)
+    (load-theme 'solarized-dark 'no-confirm)))
+
 (use-package leuven-theme
   :ensure t
+  :disabled t
   :init (load-theme 'leuven 'no-confirm))
 
 (use-package auto-dim-other-buffers
   :diminish auto-dim-other-buffers-mode
   :ensure t
+  :disabled t
   :init (auto-dim-other-buffers-mode))
 
 (use-package my-x
@@ -316,7 +325,7 @@
 
 (use-package evil-anzu
   :diminish evil-anzu-mode
-  :load-path "~/code/emacs-evil-anzu"
+  :ensure t
   :evil-bind (motion "n" evil-anzu-search-next
                      "N" evil-anzu-search-previous)
   :init (global-evil-anzu-mode))
@@ -470,7 +479,6 @@
   :ensure t
   :config
   (progn
-    (set-face-background 'stripe-highlight (face-background 'auto-dim-other-buffers-face))
     (add-hook 'dired-mode-hook 'turn-on-stripe-buffer-mode)))
 
 (use-package undo-tree
