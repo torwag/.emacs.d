@@ -85,9 +85,7 @@
 (use-package solarized-theme
   :ensure t
   :init
-  (progn
-    (setq solarized-high-contrast-mode-line t)
-    (load-theme 'solarized-dark 'no-confirm)))
+  (load-theme 'solarized-dark 'no-confirm))
 
 (use-package leuven-theme
   :ensure t
@@ -112,6 +110,14 @@
       backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
       delete-by-moving-to-trash t
       require-final-newline 'visit-save)
+
+(use-package lisp-extra-font-lock
+  :ensure t
+  :init (lisp-extra-font-lock-global-mode))
+
+(use-package yaml-mode
+  :ensure t
+  :defer t)
 
 (use-package autorevert
   :init (global-auto-revert-mode)
@@ -233,7 +239,7 @@
   :config
   (setq dired-auto-revert-buffer t
         dired-dwim-target t
-        dired-listing-switches "-alhF"))
+        dired-listing-switches "-alhF --group-directories-first"))
 
 (use-package dired-x
   :defer t)
@@ -324,11 +330,10 @@
   :init (global-anzu-mode))
 
 (use-package evil-anzu
-  :diminish evil-anzu-mode
-  :ensure t
-  :evil-bind (motion "n" evil-anzu-search-next
-                     "N" evil-anzu-search-previous)
-  :init (global-evil-anzu-mode))
+  :ensure t)
+
+(use-package elide-head
+  :init (add-hook 'prog-mode-hook #'elide-head))
 
 (use-package string-inflection
   :ensure t
@@ -391,8 +396,12 @@
   (setq hl-todo-activate-in-modes '(prog-mode)))
 
 (use-package ibuffer
-  :defer t
   :bind ("C-x C-b" . ibuffer))
+
+(use-package ibuffer-projectile
+  :ensure t
+  :config
+  (add-hook 'ibuffer-hook #'ibuffer-projectile-set-filter-groups))
 
 (use-package ido
   :ensure t
@@ -420,7 +429,10 @@
   :init (ido-vertical-mode))
 
 (use-package magit
-  :diminish (magit-auto-revert-mode magit-backup-mode)
+  :diminish (magit-auto-revert-mode magit-backup-mode )
+  :evil-state ((magit-revision-mode . emacs)
+               (magit-popup-mode . emacs)
+               (magit-popup-sequence-mode . emacs))
   :load-path "~/code/magit/"
   :evil-leader ("g" magit-status)
   :ensure t)
@@ -509,13 +521,15 @@
   (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
 (use-package anaconda-mode
+  :diminish anaconda-mode
   :ensure t
+  :evil-bind (normal anaconda-mode-map
+                     "M-." anaconda-mode-goto
+                     "M-," anaconda-nav-pop-marker)
   :init
   (progn
     (add-hook 'python-mode-hook #'anaconda-mode)
-    (add-hook 'python-mode-hook #'eldoc-mode)
-    (bind-keys :map anaconda-mode-map
-               ("M-," . anaconda-nav-pop-marker))))
+    (add-hook 'python-mode-hook #'eldoc-mode)))
 
 (use-package page-break-lines
   :diminish page-break-lines-mode
