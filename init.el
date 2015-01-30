@@ -65,7 +65,7 @@
 
 (use-package dynamic-fonts
   :ensure t
-  :init
+  :config
   (progn
     (setq dynamic-fonts-preferred-monospace-point-size 10
           dynamic-fonts-preferred-monospace-fonts
@@ -82,10 +82,16 @@
   :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
-(use-package solarized-theme
+(use-package zenburn-theme
   :ensure t
   :init
-  (load-theme 'solarized-dark 'no-confirm))
+  (load-theme 'zenburn 'no-confirm))
+
+(use-package solarized-theme
+  :ensure t
+  :disabled t
+  :init
+  (load-theme 'solarized-light 'no-confirm))
 
 (use-package leuven-theme
   :ensure t
@@ -136,12 +142,21 @@
 (use-package company
   :diminish company-mode
   :ensure t
+  :evil-bind (insert "M-TAB" company-complete)
   :defer t
   :idle (global-company-mode)
   :config
-  (setq company-tooltip-align-annotations t
-        company-dabbrev-downcase nil
-        company-dabbrev-ignore-case nil))
+  (progn
+    (bind-key "M-TAB" 'company-select-next company-active-map)
+    (setq company-tooltip-align-annotations t
+          company-dabbrev-downcase nil
+          company-dabbrev-ignore-case nil)))
+
+(use-package company-quickhelp
+  :ensure t
+  :config
+  (with-eval-after-load 'company
+    (company-quickhelp-mode)))
 
 (use-package hippie-exp
   :evil-bind (insert "TAB" hippie-expand)
@@ -326,6 +341,7 @@
 
 (use-package anzu
   :diminish anzu-mode
+  :evil-leader ("r" anzu-query-replace-at-cursor-thing)
   :ensure t
   :init (global-anzu-mode))
 
@@ -520,16 +536,19 @@
   :init
   (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
+(use-package python
+  :evil-bind (normal python-mode-map
+                     "M-n" python-nav-forward-defun
+                     "M-p" python-nav-backward-defun)
+  :init (add-hook 'python-mode-hook #'eldoc-mode))
+
 (use-package anaconda-mode
   :diminish anaconda-mode
   :ensure t
   :evil-bind (normal anaconda-mode-map
                      "M-." anaconda-mode-goto
                      "M-," anaconda-nav-pop-marker)
-  :init
-  (progn
-    (add-hook 'python-mode-hook #'anaconda-mode)
-    (add-hook 'python-mode-hook #'eldoc-mode)))
+  :init (add-hook 'python-mode-hook #'anaconda-mode))
 
 (use-package page-break-lines
   :diminish page-break-lines-mode
@@ -561,6 +580,9 @@
 (use-package help-mode
   :config
   (evil-make-overriding-map help-mode-map 'motion))
+
+(use-package web-mode
+  :mode (("\\.html$" . web-mode)))
 
 ;; (use-package re-builder
 ;;   :config

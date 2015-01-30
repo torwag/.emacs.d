@@ -76,7 +76,7 @@
   (--reduce-from
    (-if-let (index (-elem-index (car it) acc))
        (let ((elem (nth (1+ index) acc))
-             (config-body (use-package-plist-get acc :config))
+             (config-body (plist-get acc :config))
              (clean-args (-remove-at-indices `(,index ,(1+ index)) acc)))
          (plist-put clean-args :config
                     `(progn ,config-body
