@@ -144,9 +144,9 @@
   :ensure t
   :evil-bind (insert "M-TAB" company-complete)
   :defer t
-  :idle (global-company-mode)
   :config
   (progn
+    (global-company-mode)
     (bind-key "M-TAB" 'company-select-next company-active-map)
     (setq company-tooltip-align-annotations t
           company-dabbrev-downcase nil
@@ -180,9 +180,33 @@
 (use-package yasnippet
   :diminish yas-minor-mode
   :ensure t
-  :idle (yas-global-mode))
+  :defer (yas-global-mode))
 
+(use-package helm
+  :ensure t
+  :config
+  (progn
+    (setq helm-display-header-line nil) ;; t by default
+    (set-face-attribute 'helm-source-header nil :height 1.0)
+    (helm-autoresize-mode 1)
+    (setq helm-autoresize-max-height 30)
+    (setq helm-autoresize-min-height 30)
+    (setq helm-split-window-in-side-p t)))
+
+(use-package projectile
+  :ensure t
+  :init (projectile-global-mode)
+  :defer (projectile-cleanup-known-projects)
+  :config
+  (setq projectile-mode-line '(:eval (format " P[%s]" (projectile-project-name)))))
+
+(use-package helm-projectile
+  :ensure t
+  :config (helm-projectile-on))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package hydra
+  :ensure t)
 
 (global-subword-mode)
 
@@ -367,7 +391,18 @@
 (use-package flycheck
   :ensure t
   :evil-state (flycheck-error-list-mode . emacs)
-  :init (global-flycheck-mode))
+  :init
+  (progn
+    (global-flycheck-mode)
+    (evil-leader/set-key
+      "fc" (defhydra my-flycheck-hydra
+             (:pre
+              (setq flycheck-display-errors-delay 0)
+              :post
+              (setq flycheck-display-errors-delay 1))
+             "flycheck-error"
+             ("n" flycheck-next-error "next")
+             ("p" flycheck-previous-error "prev")))))
 
 (use-package flycheck-pos-tip
   :ensure t
@@ -491,13 +526,6 @@
 (use-package project-explorer
   :ensure t)
 
-(use-package projectile
-  :ensure t
-  :init (projectile-global-mode)
-  :idle (projectile-cleanup-known-projects)
-  :config
-  (setq projectile-mode-line '(:eval (format " P[%s]" (projectile-project-name)))))
-
 (use-package smex
   :ensure t
   :bind (("M-x" . smex)
@@ -540,9 +568,11 @@
   :evil-bind (normal python-mode-map
                      "M-n" python-nav-forward-defun
                      "M-p" python-nav-backward-defun)
-  :init (add-hook 'python-mode-hook #'eldoc-mode))
+  :init (add-hook 'python-mode-hook #'eldoc-mode)
+  :config (add-hook 'before-save-hook 'py-isort-before-save))
 
 (use-package anaconda-mode
+  :load-path "~/code/anaconda-mode"
   :diminish anaconda-mode
   :ensure t
   :evil-bind (normal anaconda-mode-map
@@ -582,6 +612,7 @@
   (evil-make-overriding-map help-mode-map 'motion))
 
 (use-package web-mode
+  :ensure t
   :mode (("\\.html$" . web-mode)))
 
 ;; (use-package re-builder
