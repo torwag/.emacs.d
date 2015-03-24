@@ -186,6 +186,7 @@
   :ensure t
   :config
   (progn
+    (bind-key "<backspace>" 'backward-kill-word helm-map)
     (setq helm-display-header-line nil) ;; t by default
     (set-face-attribute 'helm-source-header nil :height 1.0)
     (helm-autoresize-mode 1)
@@ -350,6 +351,7 @@
           "u" 'undo-tree-visualize
           "t" 'project-explorer-open
           "d" 'dired-jump
+          "f" 'helm-find-files
           "v" 'my-find-init-el
           "p" 'projectile-commander
           "i" 'helm-imenu
@@ -395,11 +397,7 @@
   (progn
     (global-flycheck-mode)
     (evil-leader/set-key
-      "fc" (defhydra my-flycheck-hydra
-             (:pre
-              (setq flycheck-display-errors-delay 0)
-              :post
-              (setq flycheck-display-errors-delay 1))
+      "q" (defhydra my-flycheck-hydra ()
              "flycheck-error"
              ("n" flycheck-next-error "next")
              ("p" flycheck-previous-error "prev")))))
