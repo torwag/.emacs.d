@@ -82,8 +82,14 @@
   :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
+(use-package material-theme
+  :ensure t
+  :init
+  (load-theme 'material 'no-confirm))
+
 (use-package zenburn-theme
   :ensure t
+  :disabled t
   :init
   (load-theme 'zenburn 'no-confirm))
 
@@ -192,7 +198,13 @@
     (helm-autoresize-mode 1)
     (setq helm-autoresize-max-height 30)
     (setq helm-autoresize-min-height 30)
-    (setq helm-split-window-in-side-p t)))
+    (setq helm-split-window-in-side-p t)
+    (setq helm-M-x-fuzzy-match t)
+    (setq helm-buffers-fuzzy-matching t)))
+
+(use-package helm-flx
+  :load-path "~/code/helm-flx"
+  :config (helm-flx-mode))
 
 (use-package projectile
   :ensure t
@@ -303,12 +315,13 @@
 
 (use-package evil
   :ensure t
-  :init (evil-mode)
   :config
   (progn
-    (setq-default evil-symbol-word-search t)
     (setq evil-cross-lines t
+          evil-want-C-i-jump nil
           evil-want-C-w-in-emacs-state t)
+    (evil-mode)
+    (setq-default evil-symbol-word-search t)
     ;; TODO
     (add-to-list 'evil-emacs-state-modes 'git-rebase-mode)
     (add-to-list 'evil-emacs-state-modes 'project-explorer-mode)
@@ -339,10 +352,10 @@
 
     (use-package evil-leader
       :ensure t
-      :init (global-evil-leader-mode)
       :config
       (progn
         (evil-leader/set-leader ",")
+        (global-evil-leader-mode)
         (defun my-find-init-el ()
           (interactive)
           (find-file user-init-file))
@@ -393,7 +406,7 @@
 (use-package flycheck
   :ensure t
   :evil-state (flycheck-error-list-mode . emacs)
-  :init
+  :config
   (progn
     (global-flycheck-mode)
     (evil-leader/set-key
@@ -478,13 +491,15 @@
   :init (ido-vertical-mode))
 
 (use-package magit
-  :diminish (magit-auto-revert-mode magit-backup-mode )
+  :diminish (magit-auto-revert-mode)
   :evil-state ((magit-revision-mode . emacs)
                (magit-popup-mode . emacs)
                (magit-popup-sequence-mode . emacs))
   :load-path "~/code/magit/"
   :evil-leader ("g" magit-status)
-  :ensure t)
+  :ensure t
+  :config
+  (setq magit-last-seen-setup-instructions "1.4.0"))
 
 (use-package magit-popup
   :evil-state (magit-popup-mode . emacs))
@@ -609,7 +624,12 @@
   :config
   (evil-make-overriding-map help-mode-map 'motion))
 
+(use-package jinja2-mode
+  :ensure t
+  :mode (("\\.html$" . jinja2-mode)))
+
 (use-package web-mode
+  :disabled t
   :ensure t
   :mode (("\\.html$" . web-mode)))
 
