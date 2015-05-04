@@ -84,6 +84,7 @@
 
 (use-package material-theme
   :ensure t
+  :disabled t
   :init
   (load-theme 'material 'no-confirm))
 
@@ -101,13 +102,11 @@
 
 (use-package leuven-theme
   :ensure t
-  :disabled t
   :init (load-theme 'leuven 'no-confirm))
 
 (use-package auto-dim-other-buffers
   :diminish auto-dim-other-buffers-mode
   :ensure t
-  :disabled t
   :init (auto-dim-other-buffers-mode))
 
 (use-package my-x
@@ -128,6 +127,7 @@
   :init (lisp-extra-font-lock-global-mode))
 
 (use-package yaml-mode
+  :mode "\\.sls$"
   :ensure t
   :defer t)
 
