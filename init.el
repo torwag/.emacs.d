@@ -585,7 +585,6 @@
   :config (add-hook 'before-save-hook 'py-isort-before-save))
 
 (use-package anaconda-mode
-  :load-path "~/code/anaconda-mode"
   :diminish anaconda-mode
   :ensure t
   :evil-bind (normal anaconda-mode-map
@@ -613,12 +612,15 @@
   :ensure t
   :config
   (progn
-    (defun my-set-pyenv ()
-      (let ((name (projectile-project-name)))
-        (when (member name (pyenv-mode-versions))
-          (pyenv-mode)
-          (pyenv-mode-set name))))
-    (add-hook 'python-mode-hook 'my-set-pyenv)))
+    (defun my-pyenv-mode-set ()
+      (let ((target-file (expand-file-name ".python-version"
+                                           (projectile-project-root))))
+        (when (file-exists-p target-file)
+          (pyenv-mode-set (with-temp-buffer
+                            (insert-file-contents target-file)
+                            (current-word))))))
+    (add-hook 'python-mode-hook 'pyenv-mode)
+    (add-hook 'projectile-switch-project-hook 'my-pyenv-mode-set)))
 
 (use-package help-mode
   :config
