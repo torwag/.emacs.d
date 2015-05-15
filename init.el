@@ -401,7 +401,20 @@
 (use-package elisp-slime-nav
   :diminish elisp-slime-nav-mode
   :ensure t
-  :config (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode)
+  (use-package popup)
+  (defun my-elisp-popup-doc (sym-name)
+    (interactive (list (elisp-slime-nav--read-symbol-at-point)))
+    (let* ((help-xref-following t)
+           (description
+            (save-window-excursion
+              (with-temp-buffer
+                (help-mode)
+                (help-xref-interned (intern sym-name))
+                (buffer-string)))))
+      (popup-tip description :margin t)))
+  (evil-leader/set-key-for-mode 'emacs-lisp-mode "h" 'my-elisp-popup-doc))
 
 (use-package flycheck
   :ensure t
