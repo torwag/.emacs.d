@@ -51,6 +51,7 @@
 (column-number-mode)
 (size-indication-mode)
 (fset 'yes-or-no-p #'y-or-n-p)
+(setq x-gtk-use-system-tooltips nil)
 
 (use-package cus-edit
   :defer t
@@ -156,6 +157,7 @@
     (bind-key "M-TAB" 'company-select-next company-active-map)
     (setq company-tooltip-align-annotations t
           company-dabbrev-downcase nil
+          company-dabbrev-code-everywhere t
           company-dabbrev-ignore-case nil)))
 
 (use-package company-quickhelp
@@ -413,7 +415,7 @@
                 (help-mode)
                 (help-xref-interned (intern sym-name))
                 (buffer-string)))))
-      (popup-tip description :margin t)))
+      (pos-tip-show description)))
   (evil-leader/set-key-for-mode 'emacs-lisp-mode "h" 'my-elisp-popup-doc))
 
 (use-package flycheck
@@ -422,17 +424,16 @@
   :config
   (progn
     (global-flycheck-mode)
+    (defun my-flycheck-error-fn (errors)
+      (-when-let (messages (-keep #'flycheck-error-message errors))
+        (pos-tip-show (mapconcat 'identity messages "\n"))))
+    (setq flycheck-display-errors-function #'my-flycheck-error-fn)
+    (delq 'idle-change flycheck-check-syntax-automatically)
     (evil-leader/set-key
       "q" (defhydra my-flycheck-hydra ()
              "flycheck-error"
              ("n" flycheck-next-error "next")
              ("p" flycheck-previous-error "prev")))))
-
-(use-package flycheck-pos-tip
-  :ensure t
-  :defer t
-  :init
-  (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
 (use-package flycheck-follow
   :load-path "lisp/"
@@ -590,8 +591,7 @@
   :evil-bind (normal python-mode-map
                      "M-n" python-nav-forward-defun
                      "M-p" python-nav-backward-defun)
-  :init (add-hook 'python-mode-hook #'eldoc-mode)
-  :config (add-hook 'before-save-hook 'py-isort-before-save))
+  :init (add-hook 'python-mode-hook #'eldoc-mode))
 
 (use-package anaconda-mode
   :diminish anaconda-mode
@@ -600,6 +600,16 @@
                      "M-." anaconda-mode-goto
                      "M-," anaconda-nav-pop-marker)
   :init (add-hook 'python-mode-hook #'anaconda-mode))
+
+(use-package company-anaconda
+  :ensure t
+  :defer t
+  :init
+  (defun my-setup-py-company ()
+    (make-local-variable 'company-backends)
+    (setq-local company-idle-delay 0.1)
+    (add-to-list 'company-backends 'company-anaconda))
+  (add-hook 'anaconda-mode-hook #'my-setup-py-company))
 
 (use-package page-break-lines
   :diminish page-break-lines-mode
@@ -622,8 +632,7 @@
   :config
   (progn
     (defun my-pyenv-mode-set ()
-      (let ((target-file (expand-file-name ".python-version"
-                                           (projectile-project-root))))
+      (let ((target-file (expand-file-name ".python-version" (projectile-project-root))))
         (when (file-exists-p target-file)
           (pyenv-mode-set (with-temp-buffer
                             (insert-file-contents target-file)
