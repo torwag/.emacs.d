@@ -504,15 +504,11 @@
   :init (ido-vertical-mode))
 
 (use-package magit
-  :diminish (magit-auto-revert-mode)
   :evil-state ((magit-revision-mode . emacs)
                (magit-popup-mode . emacs)
                (magit-popup-sequence-mode . emacs))
   :load-path "~/code/magit/"
-  :evil-leader ("g" magit-status)
-  :ensure t
-  :config
-  (setq magit-last-seen-setup-instructions "1.4.0"))
+  :evil-leader ("g" magit-status))
 
 (use-package magit-popup
   :evil-state (magit-popup-mode . emacs))
