@@ -221,7 +221,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package hydra
-  :ensure t)
+  :ensure t
+  :config (setq hydra-lv nil))
 
 (global-subword-mode)
 
@@ -509,7 +510,9 @@
                (magit-popup-mode . emacs)
                (magit-popup-sequence-mode . emacs))
   :load-path "~/code/magit/"
-  :evil-leader ("g" magit-status))
+  :evil-leader ("g" magit-status)
+  :config
+  (setq magit-completing-read-function 'magit-ido-completing-read))
 
 (use-package magit-popup
   :evil-state (magit-popup-mode . emacs))
@@ -669,3 +672,6 @@
 ;;         "\C-i" 'reb-change-syntax))))
 
 ;;; init.el ends here
+
+(use-package csv-mode
+  :ensure t)
