@@ -103,11 +103,17 @@
 
 (use-package leuven-theme
   :ensure t
+  :disabled t
   :init (load-theme 'leuven 'no-confirm))
+
+(use-package faff-theme
+  :ensure t
+  :init (load-theme 'faff 'no-confirm))
 
 (use-package auto-dim-other-buffers
   :diminish auto-dim-other-buffers-mode
   :ensure t
+  :disabled t
   :init (auto-dim-other-buffers-mode))
 
 (use-package my-x
@@ -204,7 +210,14 @@
     (setq helm-M-x-fuzzy-match t)
     (setq helm-buffers-fuzzy-matching t)))
 
+(use-package helm-ag
+  :ensure t
+  :config (setq helm-ag-fuzzy-match t
+                helm-ag-insert-at-point 'symbol
+                helm-ag-source-type 'file-line))
+
 (use-package helm-flx
+  :disabled t
   :load-path "~/code/helm-flx"
   :config (helm-flx-mode))
 
@@ -512,7 +525,8 @@
   :load-path "~/code/magit/"
   :evil-leader ("g" magit-status)
   :config
-  (setq magit-completing-read-function 'magit-ido-completing-read))
+  (setq magit-completing-read-function 'magit-ido-completing-read
+        magit-section-show-child-count t))
 
 (use-package magit-popup
   :evil-state (magit-popup-mode . emacs))
@@ -655,6 +669,28 @@
   :disabled t
   :ensure t
   :mode (("\\.html$" . web-mode)))
+
+(use-package js2-mode
+  :ensure t
+  :mode "\\.js\\(?:on\\)?\\'"
+  :config
+  (progn
+    (setq js2-strict-missing-semi-warning nil)
+    (setq-default js2-basic-offset 2)))
+
+(use-package tern
+  :ensure t
+  :config
+  (add-hook 'js2-mode-hook 'tern-mode))
+
+(use-package company-tern
+  :ensure t
+  :config
+  (progn
+    (defun my-init-company-tern ()
+      (add-to-list 'company-backends 'company-tern))
+
+    (add-hook 'tern-mode-hook 'my-init-company-tern)))
 
 ;; (use-package re-builder
 ;;   :config
