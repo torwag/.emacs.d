@@ -83,11 +83,10 @@
   :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
-(use-package material-theme
-  :ensure t
-  :disabled t
-  :init
-  (load-theme 'material 'no-confirm))
+(use-package material-light-theme
+  :ensure material-theme
+  :config
+  (load-theme 'material-light 'no-confirm))
 
 (use-package zenburn-theme
   :ensure t
@@ -108,6 +107,7 @@
 
 (use-package faff-theme
   :ensure t
+  :disabled t
   :init (load-theme 'faff 'no-confirm))
 
 (use-package auto-dim-other-buffers
@@ -201,20 +201,35 @@
   :config
   (progn
     (bind-key "<backspace>" 'backward-kill-word helm-map)
-    (setq helm-display-header-line nil) ;; t by default
-    (set-face-attribute 'helm-source-header nil :height 1.0)
-    (helm-autoresize-mode 1)
-    (setq helm-autoresize-max-height 30)
-    (setq helm-autoresize-min-height 30)
-    (setq helm-split-window-in-side-p t)
-    (setq helm-M-x-fuzzy-match t)
-    (setq helm-buffers-fuzzy-matching t)))
+    (setq helm-autoresize-max-height 30
+          helm-autoresize-min-height 30
+          helm-split-window-in-side-p t
+          helm-echo-input-in-header-line t)
+    (helm-mode)
+    (helm-autoresize-mode)
+
+    (defun helm-hide-minibuffer-maybe ()
+      (when (with-helm-buffer helm-echo-input-in-header-line)
+        (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+          (overlay-put ov 'window (selected-window))
+          (overlay-put ov 'face (let ((bg-color (face-background 'default nil)))
+                                  `(:background ,bg-color :foreground ,bg-color)))
+          (setq-local cursor-type nil))))
+    (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)))
 
 (use-package helm-ag
   :ensure t
   :config (setq helm-ag-fuzzy-match t
                 helm-ag-insert-at-point 'symbol
                 helm-ag-source-type 'file-line))
+
+(use-package helm-buffers
+  :config
+  (setq helm-buffers-fuzzy-matching t))
+
+(use-package helm-command
+  :config
+  (setq helm-M-x-fuzzy-match t))
 
 (use-package helm-flx
   :disabled t
@@ -354,23 +369,25 @@
                ("C-t" . pop-global-mark)
                ("C-u" . evil-scroll-up)
                ("C-b" . universal-argument)
-               ("SPC" . evil-ace-jump-word-mode)
-               ("C-SPC" . evil-ace-jump-line-mode))
+               ;; ("SPC" . evil-ace-jump-word-mode)
+               ;; ("C-SPC" . evil-ace-jump-line-mode)
+               )
 
     (bind-keys :map evil-visual-state-map
                ("\\" . comment-or-uncomment-region)
-               ("SPC" . evil-ace-jump-word-mode)
-               ("C-SPC" . evil-ace-jump-line-mode))
+               ;; ("SPC" . evil-ace-jump-word-mode)
+               ;; ("C-SPC" . evil-ace-jump-line-mode)
+               )
 
-    (bind-keys :map evil-operator-state-map
-               ("SPC" . evil-ace-jump-word-mode)
-               ("C-SPC" . evil-ace-jump-line-mode))
+    ;; (bind-keys :map evil-operator-state-map
+    ;;            ("SPC" . evil-ace-jump-word-mode)
+    ;;            ("C-SPC" . evil-ace-jump-line-mode))
 
     (use-package evil-leader
       :ensure t
       :config
       (progn
-        (evil-leader/set-leader ",")
+        (evil-leader/set-leader "SPC")
         (global-evil-leader-mode)
         (defun my-find-init-el ()
           (interactive)
@@ -383,6 +400,7 @@
           "f" 'helm-find-files
           "v" 'my-find-init-el
           "p" 'projectile-commander
+          "TAB" 'helm-mini
           "i" 'helm-imenu
           "b" 'helm-bookmarks)))
 
@@ -439,15 +457,21 @@
   (progn
     (global-flycheck-mode)
     (defun my-flycheck-error-fn (errors)
-      (-when-let (messages (-keep #'flycheck-error-message errors))
-        (pos-tip-show (mapconcat 'identity messages "\n"))))
+      (when (evil-normal-state-p)
+        (-when-let (messages (-keep #'flycheck-error-message errors))
+          (pos-tip-show (mapconcat 'identity messages "\n")))))
     (setq flycheck-display-errors-function #'my-flycheck-error-fn)
-    (delq 'idle-change flycheck-check-syntax-automatically)
+    ;; (delq 'idle-change flycheck-check-syntax-automatically)
     (evil-leader/set-key
       "q" (defhydra my-flycheck-hydra ()
-             "flycheck-error"
-             ("n" flycheck-next-error "next")
-             ("p" flycheck-previous-error "prev")))))
+            "flycheck-error"
+            ("n" flycheck-next-error "next")
+            ("p" flycheck-previous-error "prev")))))
+
+(use-package flycheck-cask
+  :ensure t
+  :defer t
+  :init (add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
 
 (use-package flycheck-follow
   :load-path "lisp/"
@@ -691,6 +715,19 @@
       (add-to-list 'company-backends 'company-tern))
 
     (add-hook 'tern-mode-hook 'my-init-company-tern)))
+
+(use-package typo
+  :config
+  (typo-global-mode))
+
+(use-package bonjourmadame
+  :config
+  (add-to-list 'evil-emacs-state-modes 'bonjourmadame-mode))
+
+(use-package yoda
+  :disabled t
+  :load-path "~/code/yoda.el"
+  :init (add-hook 'python-mode-hook #'yoda-mode))
 
 ;; (use-package re-builder
 ;;   :config
