@@ -543,17 +543,14 @@
   :init (ido-vertical-mode))
 
 (use-package magit
+  :ensure t
+  :evil-leader ("g" magit-status)
   :evil-state ((magit-revision-mode . emacs)
                (magit-popup-mode . emacs)
-               (magit-popup-sequence-mode . emacs))
-  :load-path "~/code/magit/"
-  :evil-leader ("g" magit-status)
+               (magit-refs-mode . emacs))
   :config
   (setq magit-completing-read-function 'magit-ido-completing-read
         magit-section-show-child-count t))
-
-(use-package magit-popup
-  :evil-state (magit-popup-mode . emacs))
 
 (use-package markdown-mode
   :ensure t
