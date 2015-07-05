@@ -544,13 +544,7 @@
 
 (use-package magit
   :ensure t
-  :evil-leader ("g" magit-status)
-  :evil-state ((magit-revision-mode . emacs)
-               (magit-popup-mode . emacs)
-               (magit-refs-mode . emacs))
-  :config
-  (setq magit-completing-read-function 'magit-ido-completing-read
-        magit-section-show-child-count t))
+  :evil-leader ("g" magit-status))
 
 (use-package markdown-mode
   :ensure t
