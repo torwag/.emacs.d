@@ -53,6 +53,9 @@
 (fset 'yes-or-no-p #'y-or-n-p)
 (setq x-gtk-use-system-tooltips nil)
 
+(use-package sh-script
+  :mode (("\\.envrc" . sh-mode)))
+
 (use-package cus-edit
   :defer t
   :init
