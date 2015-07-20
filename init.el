@@ -631,6 +631,7 @@
 (use-package anaconda-mode
   :diminish anaconda-mode
   :ensure t
+  :disabled t
   :evil-bind (normal anaconda-mode-map
                      "M-." anaconda-mode-goto
                      "M-," anaconda-nav-pop-marker)
@@ -639,6 +640,7 @@
 (use-package company-anaconda
   :ensure t
   :defer t
+  :disabled t
   :init
   (defun my-setup-py-company ()
     (make-local-variable 'company-backends)
@@ -664,6 +666,7 @@
 
 (use-package pyenv-mode
   :ensure t
+  :disabled t
   :config
   (progn
     (defun my-pyenv-mode-set ()
@@ -723,6 +726,30 @@
   :load-path "~/code/yoda.el"
   :init (add-hook 'python-mode-hook #'yoda-mode))
 
+(use-package pyvenv
+  :load-path "~/code/pyvenv"
+  :config
+  (defun my-pyvenv-workon-from-file ()
+    (let ((target-file (expand-file-name ".python-version" (projectile-project-root))))
+      (when (file-exists-p target-file)
+        (pyvenv-workon (with-temp-buffer
+                         (insert-file-contents target-file)
+                         (current-word))))))
+  (add-hook 'projectile-switch-project-hook #'my-pyvenv-workon-from-file)
+  (add-hook 'pyvenv-post-activate-hooks #'elpy-rpc-restart)
+  (add-hook 'pyvenv-post-activate-hooks #'pyvenv-restart-python))
+
+(use-package elpy
+  :ensure t
+  :config
+  (progn
+    (setq elpy-modules '(elpy-module-sane-defaults
+                         elpy-module-company
+                         elpy-module-eldoc
+                         elpy-module-pyvenv))
+    (elpy-enable)))
+
+
 ;; (use-package re-builder
 ;;   :config
 ;;   (progn
@@ -737,6 +764,10 @@
 ;;         "B" 'reb-change-target-buffer
 ;;         "C" 'reb-toggle-case
 ;;         "\C-i" 'reb-change-syntax))))
+
+(use-package server
+  :defer t
+  :init (server-mode))
 
 ;;; init.el ends here
 
