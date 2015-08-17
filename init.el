@@ -26,6 +26,9 @@
   :ensure t
   :config (dash-enable-font-lock))
 
+(use-package f
+  :ensure t)
+
 (eval-and-compile
   (use-package evil-use-package
     :load-path "lisp/"))
@@ -172,6 +175,7 @@
 (use-package company-quickhelp
   :ensure t
   :config
+  (unbind-key "M-h" company-quickhelp-mode-map)
   (with-eval-after-load 'company
     (company-quickhelp-mode)))
 
@@ -203,7 +207,6 @@
   :ensure t
   :config
   (progn
-    (bind-key "<backspace>" 'backward-kill-word helm-map)
     (setq helm-autoresize-max-height 30
           helm-autoresize-min-height 30
           helm-split-window-in-side-p t
@@ -231,6 +234,7 @@
   (setq helm-buffers-fuzzy-matching t))
 
 (use-package helm-command
+  :bind ("M-x" . helm-M-x)
   :config
   (setq helm-M-x-fuzzy-match t))
 
@@ -440,7 +444,8 @@
   :ensure t
   :config
   (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode)
-  (use-package popup)
+  (use-package popup
+    :ensure t)
   (defun my-elisp-popup-doc (sym-name)
     (interactive (list (elisp-slime-nav--read-symbol-at-point)))
     (let* ((help-xref-following t)
@@ -585,6 +590,7 @@
   :ensure t)
 
 (use-package smex
+  :disabled
   :ensure t
   :bind (("M-x" . smex)
          ("M-X" . smex-major-mode-commands)))
@@ -717,17 +723,17 @@
   :config
   (typo-global-mode))
 
-(use-package bonjourmadame
-  :config
-  (add-to-list 'evil-emacs-state-modes 'bonjourmadame-mode))
-
 (use-package yoda
   :disabled t
   :load-path "~/code/yoda.el"
   :init (add-hook 'python-mode-hook #'yoda-mode))
 
 (use-package pyvenv
-  :load-path "~/code/pyvenv"
+  :ensure t
+  :init
+  (let ((envdir (f-expand "~/.pyenv/versions")))
+    (when (f-dir? envdir)
+      (setenv "WORKON_HOME" envdir)))
   :config
   (defun my-pyvenv-workon-from-file ()
     (let ((target-file (expand-file-name ".python-version" (projectile-project-root))))
