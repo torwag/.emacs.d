@@ -206,13 +206,14 @@
 
 (use-package helm
   :ensure t
+  :diminish helm-mode
   :config
   (progn
     (setq helm-autoresize-max-height 30
           helm-autoresize-min-height 30
           helm-split-window-in-side-p t
           helm-echo-input-in-header-line t)
-    (helm-mode)
+    (helm-mode 1)
     (helm-autoresize-mode)
 
     (defun helm-hide-minibuffer-maybe ()
@@ -248,8 +249,7 @@
   :ensure t
   :init (projectile-global-mode)
   :defer (projectile-cleanup-known-projects)
-  :config
-  (setq projectile-mode-line '(:eval (format " P[%s]" (projectile-project-name)))))
+  :diminish projectile-mode)
 
 (use-package helm-projectile
   :ensure t
@@ -516,8 +516,7 @@
 
 (use-package ido
   :ensure t
-  :init (progn (ido-mode)
-               (ido-everywhere))
+  :init (ido-mode)
   :config
   (setq ido-enable-flex-matching t
         ido-completion-buffer nil
@@ -526,14 +525,6 @@
 (use-package flx-ido
   :ensure t
   :init (flx-ido-mode))
-
-(use-package ido-ubiquitous
-  :ensure t
-  :init (ido-ubiquitous-mode))
-
-(use-package ido-at-point
-  :ensure t
-  :init (ido-at-point-mode))
 
 (use-package ido-vertical-mode
   :ensure t
@@ -760,11 +751,10 @@
 ;;         "C" 'reb-toggle-case
 ;;         "\C-i" 'reb-change-syntax))))
 
-(use-package server
-  :defer t
-  :init (server-mode))
+;; (use-package server
+;;   :defer t
+;;   :init (server-mode))
 
-;;; init.el ends here
 
 (use-package rust-mode
   :ensure t
@@ -793,5 +783,16 @@
 (use-package toml-mode
   :ensure t)
 
+(use-package clang-format
+  :ensure t)
+
 (use-package csv-mode
   :ensure t)
+
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (setq sml/no-confirm-load-theme t)
+  (sml/setup))
+
+;;; init.el ends here
