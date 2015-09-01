@@ -89,10 +89,10 @@
   :config (setq show-paren-when-point-inside-paren nil
                 show-paren-when-point-in-periphery t))
 
-(use-package material-light-theme
-  :ensure material-theme
+(use-package material-theme
+  :ensure t
   :config
-  (load-theme 'material-light 'no-confirm))
+  (load-theme 'material 'no-confirm))
 
 (use-package zenburn-theme
   :ensure t
@@ -173,6 +173,7 @@
           company-dabbrev-ignore-case nil)))
 
 (use-package company-quickhelp
+  :disabled t
   :ensure t
   :config
   (unbind-key "M-h" company-quickhelp-mode-map)
@@ -238,10 +239,10 @@
   :config
   (setq helm-M-x-fuzzy-match t))
 
-(use-package helm-flx
-  :disabled t
-  :load-path "~/code/helm-flx"
-  :config (helm-flx-mode))
+;; (use-package helm-flx
+;;   :disabled t
+;;   :load-path "~/code/helm-flx"
+;;   :config (helm-flx-mode))
 
 (use-package projectile
   :ensure t
@@ -372,7 +373,7 @@
     (bind-keys :map evil-normal-state-map
                ("M-]" . next-error)
                ("M-[" . previous-error)
-               ("M-," . pop-tag-mark)
+               ;; ("M-," . pop-tag-mark)
                ("C-t" . pop-global-mark)
                ("C-u" . evil-scroll-up)
                ("C-b" . universal-argument)
@@ -443,20 +444,7 @@
   :diminish elisp-slime-nav-mode
   :ensure t
   :config
-  (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode)
-  (use-package popup
-    :ensure t)
-  (defun my-elisp-popup-doc (sym-name)
-    (interactive (list (elisp-slime-nav--read-symbol-at-point)))
-    (let* ((help-xref-following t)
-           (description
-            (save-window-excursion
-              (with-temp-buffer
-                (help-mode)
-                (help-xref-interned (intern sym-name))
-                (buffer-string)))))
-      (pos-tip-show description)))
-  (evil-leader/set-key-for-mode 'emacs-lisp-mode "h" 'my-elisp-popup-doc))
+  (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
 
 (use-package flycheck
   :ensure t
@@ -464,11 +452,11 @@
   :config
   (progn
     (global-flycheck-mode)
-    (defun my-flycheck-error-fn (errors)
-      (when (evil-normal-state-p)
-        (-when-let (messages (-keep #'flycheck-error-message errors))
-          (pos-tip-show (mapconcat 'identity messages "\n")))))
-    (setq flycheck-display-errors-function #'my-flycheck-error-fn)
+    ;; (defun my-flycheck-error-fn (errors)
+    ;;   (when (evil-normal-state-p)
+    ;;     (-when-let (messages (-keep #'flycheck-error-message errors))
+    ;;       (pos-tip-show (mapconcat 'identity messages "\n")))))
+    ;; (setq flycheck-display-errors-function #'my-flycheck-error-fn)
     ;; (delq 'idle-change flycheck-check-syntax-automatically)
     (evil-leader/set-key
       "q" (defhydra my-flycheck-hydra ()
@@ -482,6 +470,7 @@
   :init (add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
 
 (use-package flycheck-follow
+  :disabled
   :load-path "lisp/"
   :evil-bind (normal flycheck-mode-map
                      "]q" flycheck-follow-next-error
@@ -776,6 +765,33 @@
   :init (server-mode))
 
 ;;; init.el ends here
+
+(use-package rust-mode
+  :ensure t
+  :defer t)
+
+(use-package flycheck-rust
+  :ensure t
+  :defer t
+  :init (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+(use-package flycheck-package
+  :ensure t
+  :init (with-eval-after-load 'flycheck (flycheck-package-setup)))
+
+(use-package racer
+  :ensure t
+  :config
+  (add-hook 'rust-mode-hook #'racer-mode)
+  (add-hook 'racer-mode-hook #'eldoc-mode))
+
+(use-package rustfmt
+  :load-path "~/src/emacs-rustfmt"
+  :config
+  (define-key rust-mode-map (kbd "C-c C-f") #'rustfmt-format-buffer))
+
+(use-package toml-mode
+  :ensure t)
 
 (use-package csv-mode
   :ensure t)
