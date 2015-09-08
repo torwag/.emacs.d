@@ -778,7 +778,6 @@
   (add-hook 'racer-mode-hook #'eldoc-mode))
 
 (use-package rustfmt
-  :load-path "~/src/emacs-rustfmt"
   :config
   (define-key rust-mode-map (kbd "C-c C-f") #'rustfmt-format-buffer))
 
