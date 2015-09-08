@@ -71,6 +71,7 @@
         custom-unlispify-menu-entries nil))
 
 (use-package dynamic-fonts
+  :disabled t
   :ensure t
   :config
   (progn
@@ -364,6 +365,7 @@
     ;; TODO
     (add-to-list 'evil-emacs-state-modes 'git-rebase-mode)
     (add-to-list 'evil-emacs-state-modes 'project-explorer-mode)
+    (add-to-list 'evil-emacs-state-modes 'xref--xref-buffer-mode)
     (add-to-list 'evil-insert-state-modes 'snippet-mode)
 
     (bind-key "C-w" 'evil-delete-backward-word minibuffer-local-map)
@@ -794,5 +796,20 @@
   :config
   (setq sml/no-confirm-load-theme t)
   (sml/setup))
+
+(use-package which-key
+  :ensure t
+  :config (which-key-mode))
+
+(use-package time
+  :config
+  (setq display-time-24hr-format t
+        display-time-default-load-average nil)
+  (display-time-mode))
+
+(use-package nameless
+  :ensure t
+  :config
+  (add-hook 'emacs-lisp-mode-hook #'nameless-mode))
 
 ;;; init.el ends here
