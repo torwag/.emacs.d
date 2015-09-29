@@ -226,6 +226,9 @@
           (setq-local cursor-type nil))))
     (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)))
 
+(use-package helm-regexp
+  :evil-leader ("o" helm-occur))
+
 (use-package helm-ag
   :ensure t
   :config (setq helm-ag-fuzzy-match t
@@ -358,6 +361,7 @@
   :config
   (progn
     (setq evil-cross-lines t
+          evil-ex-substitute-global t
           evil-want-C-i-jump nil
           evil-want-C-w-in-emacs-state t)
     (evil-mode)
@@ -450,6 +454,7 @@
 
 (use-package flycheck
   :ensure t
+  :diminish flycheck-mode
   :evil-state (flycheck-error-list-mode . emacs)
   :config
   (progn
@@ -490,13 +495,6 @@
           flyspell-issue-welcome-flag nil)
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
-
-(use-package helm-swoop
-  :ensure t
-  :evil-leader ("s" helm-swoop)
-  :config
-  (setq helm-swoop-speed-or-color t
-        helm-swoop-use-line-number-face t))
 
 (use-package hl-line
   :ensure t
@@ -791,10 +789,16 @@
   :ensure t)
 
 (use-package smart-mode-line
+  :disabled t
   :ensure t
   :config
   (setq sml/no-confirm-load-theme t)
   (sml/setup))
+
+(use-package spaceline-config
+  :ensure spaceline
+  :config
+  (spaceline-spacemacs-theme))
 
 (use-package which-key
   :ensure t
@@ -806,9 +810,16 @@
         display-time-default-load-average nil)
   (display-time-mode))
 
+(use-package sh-script
+  :config
+  (evil-define-key 'visual sh-mode-map "\\" 'sh-backslash-region))
+
 (use-package nameless
   :ensure t
   :config
   (add-hook 'emacs-lisp-mode-hook #'nameless-mode))
+
+(use-package salt-mode
+  :ensure t)
 
 ;;; init.el ends here
